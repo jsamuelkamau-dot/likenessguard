@@ -1,0 +1,25 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+
+# Environment variables (except example)
+.env*
+!.env.example
+
+# Secrets and credentials
+*key*
+*secret*
+*token*
+*.pem
+id_rsa*
+*.p12
+*.pfx
+
+# Terraform state files
+terraform.tfstate*
+
+# Logs and dumps
+logs/
+dumps/
