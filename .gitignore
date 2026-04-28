@@ -161,7 +161,6 @@ package-lock.json
 requirements.txt
 setup.py
 pytest.ini
-src/
 storage/
 trial/
 types/
