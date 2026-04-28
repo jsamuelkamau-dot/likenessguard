@@ -1,0 +1,11 @@
+{
+  "policy_name": "Restrictive Policy",
+  "description": "Denies all usage types except self-edits",
+  "allow_self_edits": true,
+  "deny_third_party_edits": true,
+  "deny_face_swaps": true,
+  "deny_sexualized_content": true,
+  "deny_impersonation": true,
+  "deny_political_use": true,
+  "notes": "This policy only allows self-edits and denies all other usage types. Maximum privacy protection."
+}

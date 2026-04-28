@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-python:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install flake8
+      - name: Lint Lambda handlers
+        run: flake8 likenessguard-aws/src/lambdas/ --max-line-length=150 --ignore=E501,W503,E402,F401,F811 --exclude=__pycache__
+
+  lint-mcp:
+    name: MCP Server Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install flake8
+      - run: flake8 likenessguard-mcp/ --max-line-length=150 --ignore=E501,W503,E402,F401
+
+  build-dashboard:
+    name: Dashboard Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd likenessguard-dashboard && npm ci
+      - run: cd likenessguard-dashboard && npm run build
+        env:
+          VITE_API_BASE_URL: https://example.execute-api.us-east-1.amazonaws.com/v1
+
+  test-python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install pytest hypothesis boto3 moto[all]
+      - name: Run unit tests
+        run: cd likenessguard-aws && python -m pytest tests/ -v --tb=short
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: testing
+          AWS_SECRET_ACCESS_KEY: testing

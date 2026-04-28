@@ -1,0 +1,675 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  LikenessGuard v2 — Complete Architecture for AWS Application Composer Visualization.
+  World's first Bedrock Multi-Agent, Edge-Capable, Cryptographically Verifiable
+  Pre-Generation Consent Enforcement Platform with Cross-Platform AI Integration.
+
+# ============================================================================
+# HOW TO USE:
+# 1. Open AWS Console → Application Composer (or CloudFormation Designer)
+# 2. Upload this file
+# 3. The visual diagram will render all resources and connections
+# 4. Export as PNG/SVG for your article
+# ============================================================================
+
+Parameters:
+  OpenSearchCollectionEndpoint:
+    Type: String
+    Default: 'nxd3bg25jojtumlkpbdk.us-east-1.aoss.amazonaws.com'
+  UseOpenSearch:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+  SimilarityThreshold:
+    Type: String
+    Default: '0.85'
+  BedrockRegion:
+    Type: String
+    Default: 'us-east-1'
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        CONSENT_REGISTRY_TABLE: !Ref ConsentRegistryTable
+        AUDIT_LOG_TABLE: !Ref AuditLogTable
+        PHOTO_BUCKET: !Ref PhotoBucket
+        SIMILARITY_THRESHOLD: !Ref SimilarityThreshold
+        LOG_LEVEL: INFO
+        USE_OPENSEARCH: !Ref UseOpenSearch
+        OPENSEARCH_ENDPOINT: !Ref OpenSearchCollectionEndpoint
+        KMS_SIGNING_KEY_ARN: !GetAtt ProofOfFaceSigningKey.Arn
+        BEDROCK_REGION: !Ref BedrockRegion
+        FEDERATION_TABLE: !Ref FederationTable
+        SUSPENSION_TABLE: !Ref SuspensionTable
+
+Resources:
+
+  # ============================================================================
+  # API GATEWAY — Single Entry Point for All Platforms
+  # Routes: /v2/consent/check, /v2/proof/verify, /v2/policy/*,
+  #         /v2/federation/*, /v2/optout, /v2/image/upload, /v2/metrics/*
+  # ============================================================================
+  LikenessGuardAPI:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: LikenessGuard-API-v2
+      ProtocolType: HTTP
+      Description: >
+        LikenessGuard v2 API — serves Claude.ai (MCP), Grok (xAI),
+        OpenAI, SDKs, Dashboard, and Edge nodes
+      CorsConfiguration:
+        AllowOrigins: ['*']
+        AllowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+        AllowHeaders: ['Content-Type', 'Authorization']
+
+  APIStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref LikenessGuardAPI
+      StageName: v1
+      AutoDeploy: true
+
+  # ============================================================================
+  # LAMBDA FUNCTIONS — Multi-Agent System
+  # ============================================================================
+
+  # ── Supervisor Lambda (Orchestrator) ────────────────────────────────────────
+  # Entry point for all consent checks. Orchestrates 9-step pipeline:
+  # Input validation → Titan embedding → OpenSearch k-NN → Anomaly Agent →
+  # Consent Orchestrator → KMS signing → Audit log → Response assembly
+  # Target: <300ms P95 end-to-end
+  SupervisorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-Supervisor
+      Description: >
+        Multi-Agent Orchestrator — routes between Anomaly Agent,
+        Consent Orchestrator, and KMS signing. <300ms P95.
+      Runtime: python3.13
+      Handler: lambdas.supervisor.handler.lambda_handler
+      MemorySize: 1024
+      Timeout: 30
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          ANOMALY_AGENT_FN: !Ref AnomalyAgentFunction
+          ORCHESTRATOR_FN: !Ref ConsentOrchestratorFunction
+          POLICY_REASONER_FN: !Ref PolicyReasonerFunction
+          CONSENT_REGISTRY_TABLE: !Ref ConsentRegistryTable
+          AUDIT_LOG_TABLE: !Ref AuditLogTable
+          SUSPENSION_TABLE: !Ref SuspensionTable
+          USE_OPENSEARCH: !Ref UseOpenSearch
+          OPENSEARCH_ENDPOINT: !Ref OpenSearchCollectionEndpoint
+          KMS_SIGNING_KEY_ARN: !GetAtt ProofOfFaceSigningKey.Arn
+
+  # ── Anomaly & Threat Agent (Claude Haiku) ───────────────────────────────────
+  # Fast-path: regex + DynamoDB suspension check (<20ms)
+  # LLM path: Claude Haiku for borderline cases (<50ms)
+  # Detects: prompt injection, jailbreak, rate abuse, adversarial images
+  AnomalyAgentFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-AnomalyAgent
+      Description: >
+        Threat detection agent — Claude Haiku. Regex fast-path <20ms,
+        LLM for borderline cases. Screens for injection, jailbreak, rate abuse.
+      Runtime: python3.13
+      Handler: lambdas.anomaly_agent.handler.lambda_handler
+      MemorySize: 512
+      Timeout: 10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          SUSPENSION_TABLE: !Ref SuspensionTable
+          BEDROCK_REGION: !Ref BedrockRegion
+
+  # ── Consent Orchestrator Agent (Nova Pro / Claude Sonnet) ───────────────────
+  # Primary decision-making agent. Evaluates policy against usage type.
+  # Most-restrictive interpretation on ambiguity.
+  # Returns: {decision, reason_code, confidence, reasoning_trace}
+  ConsentOrchestratorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-ConsentOrchestrator
+      Description: >
+        Policy evaluation agent — Nova Pro (primary), Claude Sonnet (fallback).
+        Final ALLOW/DENY decision with reasoning trace.
+      Runtime: python3.13
+      Handler: lambdas.consent_orchestrator.handler.lambda_handler
+      MemorySize: 512
+      Timeout: 15
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          BEDROCK_REGION: !Ref BedrockRegion
+          SIMILARITY_THRESHOLD: !Ref SimilarityThreshold
+
+  # ── Policy Reasoner Agent (Nova Lite) ───────────────────────────────────────
+  # NL→JSON policy conversion, conflict detection, round-trip validation
+  # Temperature: 0.1 for determinism
+  PolicyReasonerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-PolicyReasoner
+      Description: >
+        NL↔JSON policy conversion — Nova Lite. Conflict detection,
+        round-trip validation. Temperature 0.1 for determinism.
+      Runtime: python3.13
+      Handler: lambdas.policy_reasoner.handler.lambda_handler
+      MemorySize: 512
+      Timeout: 15
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Registration Lambda ─────────────────────────────────────────────────────
+  # Photo upload → Rekognition face detection → Titan embedding → OpenSearch index
+  RegistrationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-Registration
+      Description: >
+        Subject registration — photo upload, Rekognition face detection,
+        Titan 512-dim embedding, OpenSearch vector indexing.
+      Runtime: python3.13
+      Handler: lambdas.registration.handler.lambda_handler
+      MemorySize: 512
+      Timeout: 30
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Federation Lambda ───────────────────────────────────────────────────────
+  # Federated registry: JWT auth, peer forwarding, public opt-out
+  FederationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-Federation
+      Description: >
+        Federated registry — JWT auth, peer forwarding, public opt-out,
+        offline decision sync.
+      Runtime: python3.13
+      Handler: lambdas.federation.handler.lambda_handler
+      MemorySize: 512
+      Timeout: 15
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Proof Verify Lambda ─────────────────────────────────────────────────────
+  # Verifies KMS ECDSA signatures on Proof-of-Face manifests
+  ProofVerifyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-ProofVerify
+      Description: >
+        Proof-of-Face verification — KMS ECDSA P-256 signature validation,
+        manifest expiry check, JWKS public key lookup.
+      Runtime: python3.13
+      Handler: lambdas.proof_verify.handler.lambda_handler
+      MemorySize: 256
+      Timeout: 10
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Backfill Lambda ─────────────────────────────────────────────────────────
+  # DynamoDB → OpenSearch migration (batch job)
+  BackfillFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-Backfill
+      Description: >
+        DynamoDB→OpenSearch migration — reads fingerprints, generates
+        Titan embeddings, writes to OpenSearch vector collection.
+      Runtime: python3.13
+      Handler: lambdas.backfill.handler.lambda_handler
+      MemorySize: 1024
+      Timeout: 900
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Metrics Lambda ──────────────────────────────────────────────────────────
+  # Live metrics aggregation for dashboard
+  MetricsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-Metrics
+      Description: >
+        Live metrics — aggregates CloudWatch data for dashboard.
+        ALLOW/DENY rates, P95 latency, false negative estimates.
+      Runtime: python3.13
+      Handler: lambdas.metrics.handler.lambda_handler
+      MemorySize: 256
+      Timeout: 15
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Evidence Retrieval Lambda ───────────────────────────────────────────────
+  # Audit log query by subject or requester
+  EvidenceRetrievalFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-EvidenceRetrieval
+      Description: >
+        Audit log query — retrieves evidence records by subject ID
+        or requester ID. Supports dashboard Activity Logs view.
+      Runtime: python3.13
+      Handler: lambdas.evidence_retrieval.handler.lambda_handler
+      MemorySize: 256
+      Timeout: 15
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Image Proxy Lambda ─────────────────────────────────────────────────────
+  # Accepts base64 image, uploads to S3, returns presigned URL
+  # Used by Custom GPT Actions and MCP tools
+  ImageProxyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-ImageProxy
+      Description: >
+        Image upload proxy — accepts base64, uploads to S3,
+        returns presigned URL. Used by Claude MCP and GPT Actions.
+      Runtime: python3.13
+      Handler: lambdas.image_proxy.handler.lambda_handler
+      MemorySize: 256
+      Timeout: 30
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Policy Update Lambda ────────────────────────────────────────────────────
+  PolicyUpdateFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LikenessGuard-PolicyUpdate
+      Description: >
+        Direct policy update — writes consent policy changes to DynamoDB.
+      Runtime: python3.13
+      Handler: lambdas.policy_update.handler.lambda_handler
+      MemorySize: 256
+      Timeout: 15
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # ============================================================================
+  # DYNAMODB TABLES — Storage & Audit
+  # ============================================================================
+
+  # Consent Registry — subject profiles, policies, fingerprints
+  ConsentRegistryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-ConsentRegistry
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: LikenessID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LikenessID
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+
+  # Audit Log — 7-year immutable trail with tamper detection
+  AuditLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-AuditLog
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: QueryID
+          AttributeType: S
+        - AttributeName: Timestamp
+          AttributeType: N
+        - AttributeName: LikenessID
+          AttributeType: S
+        - AttributeName: RequesterID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: QueryID
+          KeyType: HASH
+        - AttributeName: Timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: SubjectIndex
+          KeySchema:
+            - AttributeName: LikenessID
+              KeyType: HASH
+            - AttributeName: Timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: RequesterIndex
+          KeySchema:
+            - AttributeName: RequesterID
+              KeyType: HASH
+            - AttributeName: Timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+
+  # Federation Peers — configured peer registries
+  FederationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-Federation
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PeerID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PeerID
+          KeyType: HASH
+
+  # Suspensions — rate-limited/suspicious requesters (1-hour TTL)
+  SuspensionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-Suspensions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: RequesterID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: RequesterID
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+
+  # ============================================================================
+  # S3 BUCKETS
+  # ============================================================================
+
+  # Photo storage — temporary, auto-deleted after 24 hours
+  PhotoBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-photos-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeletePhotosAfter24Hours
+            Status: Enabled
+            ExpirationInDays: 1
+
+  # JWKS public key distribution (CloudFront-fronted)
+  JWKSBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-jwks-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  # Audit archive — long-term storage with Glacier transition
+  AuditArchiveBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-audit-archive-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      LifecycleConfiguration:
+        Rules:
+          - Id: TransitionToGlacier
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 90
+
+  # ============================================================================
+  # KMS — Proof-of-Face Cryptographic Signing
+  # ECDSA P-256, C2PA-compatible, mandatory for ALLOW decisions
+  # ============================================================================
+  ProofOfFaceSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: LikenessGuard Proof-of-Face ECDSA P-256 Signing Key
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EnableRootAccess
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+
+  ProofOfFaceKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/likenessguard-pof-signing
+      TargetKeyId: !Ref ProofOfFaceSigningKey
+
+  # ============================================================================
+  # CLOUDFRONT — JWKS Public Key Distribution
+  # Global, cached, low-latency key lookup for proof verification
+  # ============================================================================
+  JWKSOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: LikenessGuard-JWKS-OAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  JWKSDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: LikenessGuard JWKS Public Key Distribution
+        DefaultCacheBehavior:
+          TargetOriginId: JWKSOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          AllowedMethods: [GET, HEAD]
+        Origins:
+          - Id: JWKSOrigin
+            DomainName: !GetAtt JWKSBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !Ref JWKSOriginAccessControl
+
+  # ============================================================================
+  # OPENSEARCH SERVERLESS — Vector Similarity Search
+  # HNSW k-NN, 512-dim cosine similarity, <30ms P95
+  # ============================================================================
+  VectorSearchCollection:
+    Type: AWS::OpenSearchServerless::Collection
+    Properties:
+      Name: likenessguard-vectors
+      Type: VECTORSEARCH
+      Description: >
+        Facial vector embeddings — 512-dim Titan vectors,
+        HNSW k-NN cosine similarity, top-10 candidate matching.
+
+  VectorSearchAccessPolicy:
+    Type: AWS::OpenSearchServerless::AccessPolicy
+    Properties:
+      Name: likenessguard-vectors-access
+      Type: data
+      Policy: !Sub >
+        [{"Rules":[{"ResourceType":"collection","Resource":["collection/likenessguard-vectors"],"Permission":["aoss:*"]},{"ResourceType":"index","Resource":["index/likenessguard-vectors/*"],"Permission":["aoss:*"]}],"Principal":["arn:aws:iam::${AWS::AccountId}:role/LikenessGuard-LambdaExecutionRole"]}]
+
+  VectorSearchNetworkPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: likenessguard-vectors-network
+      Type: network
+      Policy: >
+        [{"Rules":[{"ResourceType":"collection","Resource":["collection/likenessguard-vectors"]},{"ResourceType":"dashboard","Resource":["collection/likenessguard-vectors"]}],"AllowFromPublic":true}]
+
+  VectorSearchEncryptionPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: likenessguard-vectors-encryption
+      Type: encryption
+      Policy: >
+        {"Rules":[{"ResourceType":"collection","Resource":["collection/likenessguard-vectors"]}],"AWSOwnedKey":true}
+
+  # ============================================================================
+  # CLOUDWATCH — Monitoring & Alarms
+  # ============================================================================
+  ConsentAllowAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-HighDenyRate
+      MetricName: ConsentDecision_DENY
+      Namespace: LikenessGuard
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 50
+      ComparisonOperator: GreaterThanThreshold
+      AlarmDescription: >
+        High deny rate — more than 50 DENY decisions in 5 minutes.
+        May indicate attack or misconfiguration.
+
+  LatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-HighLatency
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SupervisorFunction
+      Statistic: p95
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 300
+      ComparisonOperator: GreaterThanThreshold
+      AlarmDescription: >
+        P95 latency exceeds 300ms target for Supervisor Lambda.
+
+  # ============================================================================
+  # IAM — Lambda Execution Role
+  # ============================================================================
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LikenessGuard-LambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Policies:
+        - PolicyName: LikenessGuardAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # DynamoDB access
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt ConsentRegistryTable.Arn
+                  - !GetAtt AuditLogTable.Arn
+                  - !Sub '${AuditLogTable.Arn}/index/*'
+                  - !GetAtt FederationTable.Arn
+                  - !GetAtt SuspensionTable.Arn
+              # Bedrock access (all 4 models)
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/amazon.nova-pro-v1:0'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/amazon.nova-lite-v1:0'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/amazon.titan-embed-image-v1'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0'
+              # KMS signing
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                  - kms:Verify
+                  - kms:GetPublicKey
+                  - kms:DescribeKey
+                Resource: !GetAtt ProofOfFaceSigningKey.Arn
+              # Rekognition
+              - Effect: Allow
+                Action:
+                  - rekognition:DetectFaces
+                Resource: '*'
+              # OpenSearch Serverless
+              - Effect: Allow
+                Action:
+                  - aoss:APIAccessAll
+                Resource: !Sub 'arn:aws:aoss:${AWS::Region}:${AWS::AccountId}:collection/*'
+              # Lambda invoke (agent-to-agent)
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt AnomalyAgentFunction.Arn
+                  - !GetAtt ConsentOrchestratorFunction.Arn
+                  - !GetAtt PolicyReasonerFunction.Arn
+              # CloudWatch metrics
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                  - cloudwatch:GetMetricData
+                  - cloudwatch:GetMetricStatistics
+                Resource: '*'
+
+# ============================================================================
+# OUTPUTS
+# ============================================================================
+Outputs:
+  APIEndpoint:
+    Description: LikenessGuard API Gateway endpoint
+    Value: !Sub 'https://${LikenessGuardAPI}.execute-api.${AWS::Region}.amazonaws.com/v1'
+
+  SupervisorFunctionArn:
+    Description: Supervisor Lambda ARN
+    Value: !GetAtt SupervisorFunction.Arn
+
+  KMSKeyArn:
+    Description: Proof-of-Face KMS signing key ARN
+    Value: !GetAtt ProofOfFaceSigningKey.Arn
+
+  OpenSearchEndpoint:
+    Description: OpenSearch Serverless vector collection endpoint
+    Value: !GetAtt VectorSearchCollection.CollectionEndpoint
+
+  JWKSUrl:
+    Description: JWKS public key endpoint for proof verification
+    Value: !Sub 'https://${JWKSDistribution.DomainName}/.well-known/jwks.json'
+
+  ConsentRegistryTableName:
+    Description: DynamoDB Consent Registry table
+    Value: !Ref ConsentRegistryTable
+
+  AuditLogTableName:
+    Description: DynamoDB Audit Log table
+    Value: !Ref AuditLogTable

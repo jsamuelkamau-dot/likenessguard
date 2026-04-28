@@ -1,0 +1,11 @@
+{
+  "policy_name": "Permissive Policy",
+  "description": "Allows most usage types except highly sensitive ones",
+  "allow_self_edits": true,
+  "deny_third_party_edits": false,
+  "deny_face_swaps": true,
+  "deny_sexualized_content": true,
+  "deny_impersonation": true,
+  "deny_political_use": false,
+  "notes": "This policy allows third-party edits and political use, but denies face swaps, sexualized content, and impersonation"
+}
