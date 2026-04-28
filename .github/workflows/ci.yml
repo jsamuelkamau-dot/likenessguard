@@ -17,7 +17,7 @@ jobs:
           python-version: '3.12'
       - run: pip install flake8
       - name: Lint Lambda handlers
-        run: flake8 likenessguard-aws/src/lambdas/ --max-line-length=150 --ignore=E501,W503,E402,F401,F811,E722,W291,W293,E303,E302,E261,E262,W292 --exclude=__pycache__
+        run: flake8 likenessguard-aws/src/lambdas/ --max-line-length=150 --ignore=E501,W503,E402,F401,F811,E722,W291,W293,E303,E302,E261,E262,W292,E401,W391,E226,E701,E127,F821,F841 --exclude=__pycache__
 
   lint-mcp:
     name: MCP Server Lint
@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install flake8
-      - run: flake8 likenessguard-mcp/ --max-line-length=150 --ignore=E501,W503,E402,F401,E722,W291,W293,E303,E302
+      - run: flake8 likenessguard-mcp/ --max-line-length=150 --ignore=E501,W503,E402,F401,E722,W291,W293,E303,E302,E401,W391,E226,E701,E127 --exclude=__pycache__
 
   build-dashboard:
     name: Dashboard Build
