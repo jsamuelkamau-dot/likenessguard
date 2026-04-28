@@ -1,0 +1,1 @@
+{"path":"/register","body":"{\"user_id\":\"test-reg\",\"photos\":[\"dGVzdA==\"],\"consent_policy\":{\"allow_self_edits\":true,\"deny_face_swaps\":true,\"deny_third_party_edits\":true,\"deny_sexualized_content\":true,\"deny_impersonation\":true,\"deny_political_use\":true}}","httpMethod":"POST"}

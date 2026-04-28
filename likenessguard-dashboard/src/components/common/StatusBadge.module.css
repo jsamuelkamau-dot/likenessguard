@@ -1,0 +1,84 @@
+/* StatusBadge base styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+/* ALLOW status - success blue */
+.badge.allow {
+  background-color: rgba(79, 163, 255, 0.15);
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+}
+
+.badge.allow:hover {
+  background-color: rgba(79, 163, 255, 0.25);
+  box-shadow: 0 0 12px rgba(79, 163, 255, 0.3);
+}
+
+/* DENY status - error orange/red */
+.badge.deny {
+  background-color: rgba(255, 122, 69, 0.15);
+  color: var(--status-error);
+  border: 1px solid var(--status-error);
+}
+
+.badge.deny:hover {
+  background-color: rgba(255, 122, 69, 0.25);
+  box-shadow: 0 0 12px rgba(255, 122, 69, 0.3);
+}
+
+/* UNKNOWN status - neutral gray */
+.badge.unknown {
+  background-color: rgba(75, 85, 106, 0.15);
+  color: var(--status-neutral);
+  border: 1px solid var(--status-neutral);
+}
+
+.badge.unknown:hover {
+  background-color: rgba(75, 85, 106, 0.25);
+  box-shadow: 0 0 12px rgba(75, 85, 106, 0.3);
+}
+
+/* SUCCESS status - same as ALLOW */
+.badge.success {
+  background-color: rgba(79, 163, 255, 0.15);
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+}
+
+.badge.success:hover {
+  background-color: rgba(79, 163, 255, 0.25);
+  box-shadow: 0 0 12px rgba(79, 163, 255, 0.3);
+}
+
+/* ERROR status - same as DENY */
+.badge.error {
+  background-color: rgba(255, 122, 69, 0.15);
+  color: var(--status-error);
+  border: 1px solid var(--status-error);
+}
+
+.badge.error:hover {
+  background-color: rgba(255, 122, 69, 0.25);
+  box-shadow: 0 0 12px rgba(255, 122, 69, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .badge {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+}

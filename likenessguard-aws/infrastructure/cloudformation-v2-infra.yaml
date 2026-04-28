@@ -1,0 +1,443 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  LikenessGuard v2 - Infrastructure Layer
+  DynamoDB tables, KMS key, S3 buckets, OpenSearch, IAM roles.
+  Deploy this first, then deploy cloudformation-v2-lambdas.yaml.
+
+Parameters:
+  BedrockRegion:
+    Type: String
+    Default: 'us-east-1'
+
+Resources:
+
+  # ── S3 BUCKETS ──────────────────────────────────────────────────────────────
+  PhotoBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-photos-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeletePhotosAfter24Hours
+            Status: Enabled
+            ExpirationInDays: 1
+
+  JWKSBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-jwks-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  JWKSBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JWKSBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontOAC
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${JWKSBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${JWKSDistribution}'
+
+  AuditArchiveBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-audit-archive-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # ── KMS KEY ─────────────────────────────────────────────────────────────────
+  ProofOfFaceSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: LikenessGuard Proof-of-Face ECDSA P-256 Signing Key
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EnableRootAccess
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+
+  ProofOfFaceSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/likenessguard-pof-signing
+      TargetKeyId: !Ref ProofOfFaceSigningKey
+
+  # ── CLOUDFRONT JWKS ─────────────────────────────────────────────────────────
+  JWKSOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: LikenessGuard-JWKS-OAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  JWKSDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: LikenessGuard JWKS Public Key Distribution
+        DefaultCacheBehavior:
+          TargetOriginId: JWKSBucketOrigin
+          ViewerProtocolPolicy: https-only
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        Origins:
+          - Id: JWKSBucketOrigin
+            DomainName: !GetAtt JWKSBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt JWKSOriginAccessControl.Id
+        PriceClass: PriceClass_All
+        HttpVersion: http2and3
+
+  # ── OPENSEARCH SERVERLESS ───────────────────────────────────────────────────
+  OpenSearchEncryptionPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: likenessguard-encryption
+      Type: encryption
+      Policy: !Sub >
+        {"Rules":[{"ResourceType":"collection","Resource":["collection/likenessguard-vectors"]}],"AWSOwnedKey":true}
+
+  OpenSearchNetworkPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: likenessguard-network
+      Type: network
+      Policy: >
+        [{"Rules":[{"ResourceType":"collection","Resource":["collection/likenessguard-vectors"]},
+        {"ResourceType":"dashboard","Resource":["collection/likenessguard-vectors"]}],
+        "AllowFromPublic":true}]
+
+  OpenSearchAccessPolicy:
+    Type: AWS::OpenSearchServerless::AccessPolicy
+    Properties:
+      Name: likenessguard-access
+      Type: data
+      Policy: !Sub >
+        [{"Rules":[{"ResourceType":"index","Resource":["index/likenessguard-vectors/*"],
+        "Permission":["aoss:CreateIndex","aoss:DeleteIndex","aoss:UpdateIndex",
+        "aoss:DescribeIndex","aoss:ReadDocument","aoss:WriteDocument"]},
+        {"ResourceType":"collection","Resource":["collection/likenessguard-vectors"],
+        "Permission":["aoss:CreateCollectionItems","aoss:DeleteCollectionItems",
+        "aoss:UpdateCollectionItems","aoss:DescribeCollectionItems"]}],
+        "Principal":["arn:aws:iam::${AWS::AccountId}:role/LikenessGuard-LambdaExecutionRole-v2"]}]
+
+  VectorCollection:
+    Type: AWS::OpenSearchServerless::Collection
+    DependsOn:
+      - OpenSearchEncryptionPolicy
+      - OpenSearchNetworkPolicy
+    Properties:
+      Name: likenessguard-vectors
+      Type: VECTORSEARCH
+      Description: Facial vector embeddings for LikenessGuard v2 hybrid matching
+
+  # ── DYNAMODB TABLES ─────────────────────────────────────────────────────────
+  ConsentRegistryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-ConsentRegistry
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: LikenessID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LikenessID
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  AuditLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-AuditLog
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: QueryID
+          AttributeType: S
+        - AttributeName: Timestamp
+          AttributeType: N
+        - AttributeName: LikenessID
+          AttributeType: S
+        - AttributeName: RequesterID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: QueryID
+          KeyType: HASH
+        - AttributeName: Timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: LikenessIDIndex
+          KeySchema:
+            - AttributeName: LikenessID
+              KeyType: HASH
+            - AttributeName: Timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: RequesterIDIndex
+          KeySchema:
+            - AttributeName: RequesterID
+              KeyType: HASH
+            - AttributeName: Timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  FederationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-Federation
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PeerID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PeerID
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+
+  SuspensionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-Suspensions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: RequesterID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: RequesterID
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+
+  # ── IAM ROLE ─────────────────────────────────────────────────────────────────
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LikenessGuard-LambdaExecutionRole-v2
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+      Policies:
+        - PolicyName: LikenessGuardV2Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: S3Access
+                Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject]
+                Resource:
+                  - !Sub '${PhotoBucket.Arn}/*'
+                  - !Sub '${JWKSBucket.Arn}/*'
+              - Sid: DynamoDBAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !GetAtt ConsentRegistryTable.Arn
+                  - !GetAtt AuditLogTable.Arn
+                  - !GetAtt FederationTable.Arn
+                  - !GetAtt SuspensionTable.Arn
+                  - !Sub '${AuditLogTable.Arn}/index/*'
+              - Sid: RekognitionAccess
+                Effect: Allow
+                Action: [rekognition:DetectFaces, rekognition:CompareFaces]
+                Resource: '*'
+              - Sid: BedrockAccess
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/amazon.nova-pro-v1:0'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/amazon.nova-lite-v1:0'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0'
+                  - !Sub 'arn:aws:bedrock:${BedrockRegion}::foundation-model/amazon.titan-embed-image-v1'
+              - Sid: KMSSignVerify
+                Effect: Allow
+                Action:
+                  - kms:Sign
+                  - kms:Verify
+                  - kms:GetPublicKey
+                  - kms:DescribeKey
+                Resource: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/likenessguard-pof-signing'
+              - Sid: OpenSearchAccess
+                Effect: Allow
+                Action: aoss:APIAccessAll
+                Resource: !Sub 'arn:aws:aoss:${AWS::Region}:${AWS::AccountId}:collection/*'
+              - Sid: CloudWatchMetrics
+                Effect: Allow
+                Action: cloudwatch:PutMetricData
+                Resource: '*'
+              - Sid: LambdaInvoke
+                Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:LikenessGuard-*'
+
+  # ── CLOUDWATCH LOG GROUPS ────────────────────────────────────────────────────
+  SupervisorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-Supervisor
+      RetentionInDays: 2557
+
+  AnomalyAgentLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-AnomalyAgent
+      RetentionInDays: 2557
+
+  PolicyReasonerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-PolicyReasoner
+      RetentionInDays: 2557
+
+  ConsentOrchestratorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-ConsentOrchestrator
+      RetentionInDays: 2557
+
+  ProofVerifyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-ProofVerify
+      RetentionInDays: 2557
+
+  FederationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-Federation
+      RetentionInDays: 2557
+
+  # ── CLOUDWATCH ALARMS ────────────────────────────────────────────────────────
+  FalseNegativeRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-FalseNegativeRate
+      MetricName: EstimatedFalseNegativeRate
+      Namespace: LikenessGuard
+      Statistic: Average
+      Period: 86400
+      EvaluationPeriods: 1
+      Threshold: 0.5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  P95LatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-P95Latency
+      MetricName: ConsentCheckLatencyP95
+      Namespace: LikenessGuard
+      Statistic: p95
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 300
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+Outputs:
+  LambdaExecutionRoleArn:
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Export:
+      Name: LikenessGuard-v2-LambdaRoleArn
+
+  ProofOfFaceKeyArn:
+    Value: !GetAtt ProofOfFaceSigningKey.Arn
+    Export:
+      Name: LikenessGuard-v2-KMSKeyArn
+
+  JWKSEndpoint:
+    Value: !Sub 'https://${JWKSDistribution.DomainName}/.well-known/jwks.json'
+    Export:
+      Name: LikenessGuard-v2-JWKSEndpoint
+
+  VectorCollectionEndpoint:
+    Value: !GetAtt VectorCollection.CollectionEndpoint
+    Export:
+      Name: LikenessGuard-v2-OpenSearchEndpoint
+
+  PhotoBucketName:
+    Value: !Ref PhotoBucket
+    Export:
+      Name: LikenessGuard-v2-PhotoBucket
+
+  JWKSBucketName:
+    Value: !Ref JWKSBucket
+    Export:
+      Name: LikenessGuard-v2-JWKSBucket

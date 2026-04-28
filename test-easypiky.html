@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EasyPiky Test Page - Dark Green Theme</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a1612 0%, #0d2818 100%);
+      color: #b8e6d5;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      padding: 40px;
+      background: linear-gradient(135deg, #0f2419 0%, #1a3d2e 100%);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+      border: 2px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .header h1 {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: #00ff88;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    }
+    
+    .header p {
+      font-size: 20px;
+      color: #7dd3ae;
+    }
+    
+    .section {
+      background: linear-gradient(135deg, #0f2419 0%, #1a3d2e 100%);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 16px rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .section h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    
+    .section p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #b8e6d5;
+    }
+    
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+    
+    .link-card {
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    
+    .link-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 255, 136, 0.2);
+      border-color: #00ff88;
+    }
+    
+    .link-card h3 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #00ff88;
+    }
+    
+    .link-card p {
+      font-size: 14px;
+      margin-bottom: 16px;
+      color: #7dd3ae;
+    }
+    
+    .link-card a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    }
+    
+    .link-card a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 255, 136, 0.5);
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .badge-safe {
+      background: rgba(0, 255, 136, 0.2);
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .badge-suspicious {
+      background: rgba(255, 68, 68, 0.2);
+      color: #ff8888;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+    
+    .badge-unknown {
+      background: rgba(255, 170, 0, 0.2);
+      color: #ffaa00;
+      border: 1px solid rgba(255, 170, 0, 0.3);
+    }
+    
+    .info-box {
+      background: rgba(0, 255, 136, 0.1);
+      border-left: 4px solid #00ff88;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 24px;
+    }
+    
+    .info-box h3 {
+      color: #00ff88;
+      margin-bottom: 8px;
+    }
+    
+    .info-box p {
+      color: #b8e6d5;
+      margin: 0;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 32px;
+      border-top: 1px solid rgba(0, 255, 136, 0.2);
+      color: #7dd3ae;
+    }
+    
+    .footer a {
+      color: #00ff88;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .footer a:hover {
+      color: #00cc6a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛡️ EasyPiky Test Page</h1>
+      <p>Test the anti-phishing protection with the new dark green theme</p>
+    </div>
+
+    <div class="section">
+      <h2>✅ Safe Links <span class="badge badge-safe">SAFE</span></h2>
+      <p>These links should pass through without any warnings:</p>
+      
+      <div class="link-grid">
+        <div class="link-card">
+          <h3>Google</h3>
+          <p>Trusted search engine</p>
+          <a href="https://www.google.com" target="_blank">Visit Google →</a>
+        </div>
+        
+        <div class="link-card">
+          <h3>GitHub</h3>
+          <p>Developer platform</p>
+          <a href="https://github.com" target="_blank">Visit GitHub →</a>
+        </div>
+        
+        <div class="link-card">
+          <h3>Stack Overflow</h3>
+          <p>Developer Q&A</p>
+          <a href="https://stackoverflow.com" target="_blank">Visit Stack Overflow →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>⚠️ Suspicious Links <span class="badge badge-suspicious">SUSPICIOUS</span></h2>
+      <p>These links will trigger the blocking modal with dark green theme:</p>
+      
+      <div class="link-grid">
+        <div class="link-card">
+          <h3>Punycode Domain</h3>
+          <p>Uses Unicode characters</p>
+          <a href="https://аррӏе.com/login" target="_blank">Test Punycode →</a>
+        </div>
+        
+        <div class="link-card">
+          <h3>Look-alike Domain</h3>
+          <p>Similar to trusted site</p>
+          <a href="https://g00gle.com" target="_blank">Test Look-alike →</a>
+        </div>
+        
+        <div class="link-card">
+          <h3>Suspicious Subdomain</h3>
+          <p>Misleading subdomain</p>
+          <a href="https://secure-login-verify.suspicious-site.com" target="_blank">Test Subdomain →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>❓ Unknown Links <span class="badge badge-unknown">UNKNOWN</span></h2>
+      <p>These links will show a warning asking for user decision:</p>
+      
+      <div class="link-grid">
+        <div class="link-card">
+          <h3>Random Site</h3>
+          <p>Not in trusted list</p>
+          <a href="https://example-unknown-site.com" target="_blank">Test Unknown →</a>
+        </div>
+        
+        <div class="link-card">
+          <h3>New Domain</h3>
+          <p>Unrecognized domain</p>
+          <a href="https://brand-new-site-2024.com" target="_blank">Test New Domain →</a>
+        </div>
+        
+        <div class="link-card">
+          <h3>Uncommon TLD</h3>
+          <p>Unusual extension</p>
+          <a href="https://example.xyz" target="_blank">Test Uncommon TLD →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <h3>🎨 Dark Green Theme Features</h3>
+      <p>
+        The new EasyPiky theme features a dark shiny green aesthetic with electric green (#00ff88) accents.
+        The blocking modal uses smooth animations, glowing effects, and a professional cybersecurity-focused design.
+        All UI components maintain excellent readability while creating a modern, trustworthy appearance.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>🛡️ Protected by <strong style="color: #00ff88;">EasyPiky</strong></p>
+      <p style="margin-top: 8px;">
+        <a href="https://easypiky.com">Learn More</a> • 
+        <a href="https://easypiky.com/privacy">Privacy</a> • 
+        <a href="https://easypiky.com/help">Help</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

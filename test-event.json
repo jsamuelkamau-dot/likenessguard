@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "path": "/auth",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"email\":\"admin@interpose.io\",\"password\":\"*9g})NjO&a{0[~ta\"}"
+}

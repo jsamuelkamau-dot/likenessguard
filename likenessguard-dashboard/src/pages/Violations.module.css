@@ -1,0 +1,12 @@
+﻿/**
+ * Violations Page Styles
+ * 
+ * Futuristic AI cybersecurity theme
+ * Requirements: 6.1
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

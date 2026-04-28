@@ -1,0 +1,1 @@
+{"statusCode": 400, "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://localhost:5173", "Access-Control-Allow-Headers": "Content-Type,X-API-Key,Authorization,X-Amz-Date", "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS"}, "body": "{\"error\": {\"code\": \"INVALID_REQUEST\", \"message\": \"Missing required field: photo_keys\"}}"}

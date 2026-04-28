@@ -1,0 +1,1 @@
+{"httpMethod":"POST","path":"/register","body":"{\"user_id\":\"test-reg-fix\",\"photos\":[\"dGVzdA==\"],\"consent_policy\":{}}"}

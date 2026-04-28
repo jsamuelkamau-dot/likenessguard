@@ -1,0 +1,1 @@
+{"decision": "DENY", "reason_code": "DENY_IMPERSONATION", "confidence": 1.0, "reasoning_trace": "Subject policy denies impersonation/general generation of their likeness.", "latency_ms": 0, "policy_reasoner_invoked": false}

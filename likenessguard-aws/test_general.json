@@ -1,0 +1,1 @@
+{"path":"/v2/consent/check","httpMethod":"POST","body":"{\"image\":\"dGVzdA==\",\"usage_type\":\"GENERAL_GENERATION\",\"requester_id\":\"embedding-fix-test\"}"}

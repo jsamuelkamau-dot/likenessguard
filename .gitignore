@@ -1,25 +1,93 @@
-node_modules/
-dist/
-coverage/
-*.log
-.DS_Store
-
-# Environment variables (except example)
-.env*
+# ── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.*
 !.env.example
-
-# Secrets and credentials
-*key*
-*secret*
-*token*
 *.pem
-id_rsa*
+*.key
 *.p12
 *.pfx
+credentials
+aws_credentials
+.aws/
+secrets.json
+secrets.yaml
 
-# Terraform state files
-terraform.tfstate*
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+*.pyc
 
-# Logs and dumps
+# ── Node / Dashboard ─────────────────────────────────────────────────────────
+node_modules/
+dist/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── AWS SAM / CDK ─────────────────────────────────────────────────────────────
+.aws-sam/
+cdk.out/
+samconfig.toml
+!samconfig-v2.toml.example
+
+# ── IDE & OS ──────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+
+# ── Greengrass / IoT ─────────────────────────────────────────────────────────
+greengrass/
+*.gg.cert.pem
+*.gg.private.key
+*.gg.public.key
+rootCA.pem
+edge_cache.db
+
+# ── Logs & Temp ───────────────────────────────────────────────────────────────
+*.log
 logs/
-dumps/
+tmp/
+temp/
+.tmp/
+
+# ── Test artifacts ────────────────────────────────────────────────────────────
+.coverage
+coverage.xml
+test-results/
+
+# ── Kiro internal (contains real AWS account IDs/ARNs) ───────────────────────
+.kiro/
+
+# ── Backup directories ────────────────────────────────────────────────────────
+likenessguard-backup-v1/
+likenessguard-backup-v2/
+
+# ── SAM config with real account IDs ─────────────────────────────────────────
+likenessguard-aws/samconfig-v2.toml

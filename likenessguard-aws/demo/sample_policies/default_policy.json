@@ -1,0 +1,11 @@
+{
+  "policy_name": "Default Policy",
+  "description": "Balanced policy for typical users",
+  "allow_self_edits": true,
+  "deny_third_party_edits": true,
+  "deny_face_swaps": true,
+  "deny_sexualized_content": true,
+  "deny_impersonation": true,
+  "deny_political_use": true,
+  "notes": "This is the recommended default policy. Allows self-edits only and denies all potentially harmful usage types."
+}

@@ -1,0 +1,349 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'LikenessGuard - Consent Enforcement for AI Image Generation'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prototype
+    Description: Environment name for resource naming
+
+Resources:
+  # S3 Bucket for Reference Images
+  ReferenceImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-images-${Environment}'
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins: ['*']
+            AllowedMethods: [GET, PUT, POST]
+            AllowedHeaders: ['*']
+            MaxAge: 3000
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # DynamoDB Table for Consent Registry
+  ConsentRegistryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'likenessguard-consent-registry-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: likeness_id
+          AttributeType: S
+        - AttributeName: fingerprint_hash
+          AttributeType: S
+      KeySchema:
+        - AttributeName: likeness_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: fingerprint-index
+          KeySchema:
+            - AttributeName: fingerprint_hash
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+  # DynamoDB Table for Audit Logs
+  AuditLogsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'likenessguard-audit-logs-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: likeness_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+        - AttributeName: query_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: likeness_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: query-id-index
+          KeySchema:
+            - AttributeName: query_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # IAM Role for Lambda Functions
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'likenessguard-lambda-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: LikenessGuardPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt ConsentRegistryTable.Arn
+                  - !Sub '${ConsentRegistryTable.Arn}/index/*'
+                  - !GetAtt AuditLogsTable.Arn
+                  - !Sub '${AuditLogsTable.Arn}/index/*'
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub '${ReferenceImagesBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - rekognition:DetectFaces
+                  - rekognition:CompareFaces
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+
+  # Lambda Function - Registration
+  RegistrationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'likenessguard-registration-${Environment}'
+      Runtime: python3.11
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          CONSENT_REGISTRY_TABLE: !Ref ConsentRegistryTable
+          IMAGES_BUCKET: !Ref ReferenceImagesBucket
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': 'Registration function'}
+
+  # Lambda Function - Consent Check
+  ConsentCheckFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'likenessguard-consent-check-${Environment}'
+      Runtime: python3.11
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          CONSENT_REGISTRY_TABLE: !Ref ConsentRegistryTable
+          AUDIT_LOGS_TABLE: !Ref AuditLogsTable
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': 'Consent check function'}
+
+  # Lambda Function - Consent Policy Update
+  ConsentUpdateFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'likenessguard-consent-update-${Environment}'
+      Runtime: python3.11
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          CONSENT_REGISTRY_TABLE: !Ref ConsentRegistryTable
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': 'Consent update function'}
+
+  # Lambda Function - Evidence Retrieval
+  EvidenceRetrievalFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'likenessguard-evidence-retrieval-${Environment}'
+      Runtime: python3.11
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          AUDIT_LOGS_TABLE: !Ref AuditLogsTable
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': 'Evidence retrieval function'}
+
+  # Lambda Function - Upload Presigned URL
+  UploadPresignedUrlFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'likenessguard-upload-presigned-url-${Environment}'
+      Runtime: python3.11
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          IMAGES_BUCKET: !Ref ReferenceImagesBucket
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': 'Presigned URL function'}
+
+  # API Gateway REST API
+  LikenessGuardApi:
+    Type: AWS::ApiGateway::RestAPI
+    Properties:
+      Name: !Sub 'likenessguard-api-${Environment}'
+      Description: Consent enforcement API for AI image generation
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  # API Gateway Resources
+  RegisterResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      ParentId: !GetAtt LikenessGuardApi.RootResourceId
+      PathPart: register
+
+  ConsentResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      ParentId: !GetAtt LikenessGuardApi.RootResourceId
+      PathPart: consent
+
+  ConsentCheckResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      ParentId: !Ref ConsentResource
+      PathPart: check
+
+  EvidenceResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      ParentId: !GetAtt LikenessGuardApi.RootResourceId
+      PathPart: evidence
+
+  UploadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      ParentId: !GetAtt LikenessGuardApi.RootResourceId
+      PathPart: upload
+
+  # API Gateway Methods (Registration)
+  RegisterPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      ResourceId: !Ref RegisterResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RegistrationFunction.Arn}/invocations'
+
+  # API Gateway Methods (Consent Check)
+  ConsentCheckPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      ResourceId: !Ref ConsentCheckResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConsentCheckFunction.Arn}/invocations'
+
+  # Lambda Permissions
+  RegistrationFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RegistrationFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LikenessGuardApi}/*'
+
+  ConsentCheckFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ConsentCheckFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LikenessGuardApi}/*'
+
+  # API Gateway Deployment
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - RegisterPostMethod
+      - ConsentCheckPostMethod
+    Properties:
+      RestApiId: !Ref LikenessGuardApi
+      StageName: v1
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${LikenessGuardApi}.execute-api.${AWS::Region}.amazonaws.com/v1'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+
+  ConsentRegistryTableName:
+    Description: DynamoDB consent registry table name
+    Value: !Ref ConsentRegistryTable
+    Export:
+      Name: !Sub '${AWS::StackName}-ConsentRegistryTable'
+
+  AuditLogsTableName:
+    Description: DynamoDB audit logs table name
+    Value: !Ref AuditLogsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-AuditLogsTable'
+
+  ImagesBucketName:
+    Description: S3 bucket for reference images
+    Value: !Ref ReferenceImagesBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-ImagesBucket'

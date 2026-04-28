@@ -1,0 +1,1 @@
+{"httpMethod":"POST","path":"/v2/consent/check","body":"{\"image_url\":\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Gatto_europeo4.jpg/320px-Gatto_europeo4.jpg\",\"usage_type\":\"GENERAL_GENERATION\",\"requester_id\":\"gpt\"}"}

@@ -1,0 +1,1 @@
+{"httpMethod":"POST","path":"/register","body":"{\"user_id\":\"crosscheck-test\",\"photo_keys\":[],\"consent_policy\":{}}"}

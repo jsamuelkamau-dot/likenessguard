@@ -1,0 +1,1 @@
+{"statusCode": 200, "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}, "body": "{\"total_checks_24h\": 2, \"allow_rate\": 0.0, \"deny_rate\": 0.5, \"false_negative_rate\": 0.0031, \"p95_latency_ms\": 247, \"cost_per_1000\": 0.048, \"total_registered\": 22, \"last_updated\": 1775628823}"}

@@ -1,0 +1,24 @@
+.container { background: #1a2035; border: 1px solid #2a3550; border-radius: 8px; overflow: hidden; }
+.header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #0f1729; border-bottom: 1px solid #2a3550; }
+.title { color: #e2e8f0; font-weight: 600; font-size: 14px; flex: 1; }
+.requestId { color: #4B556A; font-size: 11px; font-family: monospace; }
+.totalLatency { color: #4FA3FF; font-size: 12px; font-weight: 600; }
+.section { border-bottom: 1px solid #2a3550; }
+.section:last-child { border-bottom: none; }
+.sectionHeader { width: 100%; display: flex; align-items: center; padding: 10px 16px; background: transparent; border: none; cursor: pointer; color: #e2e8f0; text-align: left; }
+.sectionHeader:hover { background: #1e2d4a; }
+.sectionTitle { flex: 1; font-size: 13px; font-weight: 500; }
+.sectionMeta { display: flex; align-items: center; gap: 8px; }
+.latencyBadge { background: #0f1729; color: #4FA3FF; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+.statusBadge { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); }
+.chevron { color: #4B556A; font-size: 10px; }
+.sectionBody { padding: 12px 16px; background: #0f1729; }
+.agentDetail { display: flex; flex-direction: column; gap: 6px; }
+.detailRow { display: flex; gap: 8px; align-items: flex-start; }
+.detailLabel { color: #4B556A; font-size: 12px; min-width: 90px; flex-shrink: 0; }
+.detailValue { color: #e2e8f0; font-size: 12px; font-family: monospace; }
+.success { color: #4FA3FF !important; }
+.danger { color: #FF7A45 !important; }
+.reasoning { margin-top: 8px; }
+.reasoningLabel { color: #4B556A; font-size: 12px; display: block; margin-bottom: 4px; }
+.reasoningText { color: #a0aec0; font-size: 12px; line-height: 1.5; margin: 0; }

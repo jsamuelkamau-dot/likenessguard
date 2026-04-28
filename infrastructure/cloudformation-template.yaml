@@ -1,0 +1,722 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Interpose SaaS Platform - Backend Infrastructure
+
+Parameters:
+  AlertEmailSource:
+    Type: String
+    Description: Verified SES email address for sending high-risk alerts
+    Default: alerts@interpose.io
+  
+  LambdaCodeBucket:
+    Type: String
+    Description: S3 bucket containing Lambda deployment package
+    Default: ''
+  
+  LambdaCodeKey:
+    Type: String
+    Description: S3 key for Lambda deployment package
+    Default: lambda-deployment.zip
+
+Resources:
+  # ==================== DynamoDB Tables ====================
+  
+  AIObserveLogsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AIObserveLogs
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: customer_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: customer_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      TimeToLiveSpecification:
+        Enabled: true
+        AttributeName: ttl
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: LogStorage
+
+  CustomersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Customers
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: customer_id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+        - AttributeName: api_key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: customer_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ApiKeyIndex
+          KeySchema:
+            - AttributeName: api_key
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: CustomerManagement
+
+  # ==================== IAM Roles and Policies ====================
+  
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: InterposeLogProcessorRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt AIObserveLogsTable.Arn
+                  - !GetAtt CustomersTable.Arn
+                  - !Sub '${CustomersTable.Arn}/index/*'
+        - PolicyName: SESAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: '*'
+        - PolicyName: CloudWatchLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/interpose-log-processor:*'
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Lambda
+
+  # ==================== Lambda Function ====================
+  
+  LogProcessorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: interpose-log-processor
+      Runtime: python3.11
+      Handler: lambda_handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 10
+      MemorySize: 512
+      Environment:
+        Variables:
+          LOGS_TABLE: !Ref AIObserveLogsTable
+          CUSTOMERS_TABLE: !Ref CustomersTable
+          ALERT_EMAIL_SOURCE: !Ref AlertEmailSource
+          PYTHONUNBUFFERED: '1'
+      Code:
+        ZipFile: |
+          import json
+          def lambda_handler(event, context):
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps({'message': 'Placeholder - Deploy actual code'})
+              }
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Backend
+
+  LogProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/interpose-log-processor
+      RetentionInDays: 30
+
+  # ==================== API Gateway ====================
+  
+  InterposeAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: Interpose-API
+      Description: API for receiving agent logs and serving dashboard data
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: API
+
+  # /logs resource
+  LogsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      ParentId: !GetAtt InterposeAPI.RootResourceId
+      PathPart: logs
+
+  # POST /logs method
+  LogsPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      ResourceId: !Ref LogsResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LogProcessorFunction.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+        - StatusCode: 401
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # GET /logs method
+  LogsGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      ResourceId: !Ref LogsResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LogProcessorFunction.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+        - StatusCode: 401
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # OPTIONS /logs method for CORS
+  LogsOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      ResourceId: !Ref LogsResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-API-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # /auth resource
+  AuthResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      ParentId: !GetAtt InterposeAPI.RootResourceId
+      PathPart: auth
+
+  # POST /auth method
+  AuthPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      ResourceId: !Ref AuthResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LogProcessorFunction.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+        - StatusCode: 401
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # OPTIONS /auth method for CORS
+  AuthOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      ResourceId: !Ref AuthResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway Deployment
+  APIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - LogsPostMethod
+      - LogsGetMethod
+      - LogsOptionsMethod
+      - AuthPostMethod
+      - AuthOptionsMethod
+    Properties:
+      RestApiId: !Ref InterposeAPI
+      StageName: prod
+
+  # Lambda permission for API Gateway
+  APIGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LogProcessorFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InterposeAPI}/*'
+
+  # ==================== S3 Bucket for Dashboard ====================
+  
+  DashboardBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'interpose-dashboard-${AWS::AccountId}'
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - '*'
+            AllowedMethods:
+              - GET
+              - HEAD
+            AllowedHeaders:
+              - '*'
+            MaxAge: 3600
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Dashboard
+
+  DashboardBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DashboardBucket
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource: !Sub '${DashboardBucket.Arn}/*'
+
+  # ==================== CloudFront Distribution ====================
+  
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'OAI for Interpose Dashboard - ${AWS::StackName}'
+
+  DashboardDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Comment: Interpose Dashboard CDN
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt DashboardBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          MinTTL: 0
+          DefaultTTL: 86400
+          MaxTTL: 31536000
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        PriceClass: PriceClass_100
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: CDN
+
+  # ==================== SNS Topic for Alarms ====================
+  
+  AlarmNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: interpose-alarms
+      DisplayName: Interpose Platform Alarms
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Monitoring
+
+  # ==================== CloudWatch Alarms ====================
+  
+  LambdaErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Interpose-Lambda-ErrorRate
+      AlarmDescription: Alert when Lambda error rate exceeds 1%
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300  # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref LogProcessorFunction
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Monitoring
+  
+  LambdaErrorRatePercentageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Interpose-Lambda-ErrorRatePercentage
+      AlarmDescription: Alert when Lambda error rate exceeds 1% of invocations
+      Metrics:
+        - Id: error_rate
+          Expression: (errors / invocations) * 100
+          Label: Error Rate Percentage
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Errors
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref LogProcessorFunction
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Invocations
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref LogProcessorFunction
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+      EvaluationPeriods: 1
+      Threshold: 1.0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Monitoring
+  
+  APIGateway5xxErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Interpose-APIGateway-5xxErrors
+      AlarmDescription: Alert when API Gateway 5xx error rate exceeds 0.1%
+      Metrics:
+        - Id: error_rate
+          Expression: (errors / requests) * 100
+          Label: 5xx Error Rate Percentage
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: ApiName
+                  Value: !Ref InterposeAPI
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: requests
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: ApiName
+                  Value: !Ref InterposeAPI
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+      EvaluationPeriods: 1
+      Threshold: 0.1
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Monitoring
+  
+  DynamoDBThrottledRequestsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Interpose-DynamoDB-ThrottledRequests
+      AlarmDescription: Alert when DynamoDB has throttled requests
+      MetricName: UserErrors
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300  # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: TableName
+          Value: !Ref AIObserveLogsTable
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Monitoring
+  
+  DynamoDBCustomersThrottledRequestsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Interpose-DynamoDB-Customers-ThrottledRequests
+      AlarmDescription: Alert when DynamoDB Customers table has throttled requests
+      MetricName: UserErrors
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300  # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: TableName
+          Value: !Ref CustomersTable
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Monitoring
+  
+  SESBounceRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Interpose-SES-BounceRate
+      AlarmDescription: Alert when SES bounce rate exceeds 5%
+      Metrics:
+        - Id: bounce_rate
+          Expression: (bounces / sends) * 100
+          Label: Bounce Rate Percentage
+        - Id: bounces
+          MetricStat:
+            Metric:
+              Namespace: AWS/SES
+              MetricName: Reputation.BounceRate
+            Period: 300
+            Stat: Average
+          ReturnData: false
+        - Id: sends
+          MetricStat:
+            Metric:
+              Namespace: AWS/SES
+              MetricName: Send
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+      EvaluationPeriods: 2
+      Threshold: 5.0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      Tags:
+        - Key: Application
+          Value: Interpose
+        - Key: Component
+          Value: Monitoring
+
+# ==================== Outputs ====================
+
+Outputs:
+  APIEndpoint:
+    Description: API Gateway endpoint URL for backend API
+    Value: !Sub 'https://${InterposeAPI}.execute-api.${AWS::Region}.amazonaws.com/prod'
+    Export:
+      Name: !Sub '${AWS::StackName}-APIEndpoint'
+
+  DashboardURL:
+    Description: CloudFront distribution URL for dashboard
+    Value: !Sub 'https://${DashboardDistribution.DomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-DashboardURL'
+
+  DashboardBucketName:
+    Description: S3 bucket name for dashboard hosting
+    Value: !Ref DashboardBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-DashboardBucket'
+
+  LogsTableName:
+    Description: DynamoDB table name for AI observe logs
+    Value: !Ref AIObserveLogsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-LogsTable'
+
+  CustomersTableName:
+    Description: DynamoDB table name for customers
+    Value: !Ref CustomersTable
+    Export:
+      Name: !Sub '${AWS::StackName}-CustomersTable'
+
+  LambdaFunctionArn:
+    Description: ARN of the log processor Lambda function
+    Value: !GetAtt LogProcessorFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaArn'
+
+  LambdaFunctionName:
+    Description: Name of the log processor Lambda function
+    Value: !Ref LogProcessorFunction
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaName'
+
+  AlarmTopicArn:
+    Description: ARN of the SNS topic for alarm notifications
+    Value: !Ref AlarmNotificationTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-AlarmTopic'
+
+  LambdaErrorRateAlarmName:
+    Description: Name of the Lambda error rate alarm
+    Value: !Ref LambdaErrorRateAlarm
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaErrorAlarm'
+
+  APIGateway5xxErrorAlarmName:
+    Description: Name of the API Gateway 5xx error alarm
+    Value: !Ref APIGateway5xxErrorAlarm
+    Export:
+      Name: !Sub '${AWS::StackName}-APIGateway5xxAlarm'
+
+  DynamoDBThrottledRequestsAlarmName:
+    Description: Name of the DynamoDB throttled requests alarm
+    Value: !Ref DynamoDBThrottledRequestsAlarm
+    Export:
+      Name: !Sub '${AWS::StackName}-DynamoDBThrottleAlarm'
+
+  SESBounceRateAlarmName:
+    Description: Name of the SES bounce rate alarm
+    Value: !Ref SESBounceRateAlarm
+    Export:
+      Name: !Sub '${AWS::StackName}-SESBounceAlarm'

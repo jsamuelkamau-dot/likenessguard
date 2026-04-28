@@ -1,0 +1,23 @@
+{
+    "similarity_score":  0.86,
+    "policy_version":  1,
+    "usage_type":  "GENERAL_GENERATION",
+    "anomaly_cleared":  true,
+    "policy":  {
+                   "allow_self_edits":  false,
+                   "allow_general_generation":  false,
+                   "deny_third_party_edits":  true,
+                   "deny_impersonation":  true,
+                   "deny_sexualized_content":  true,
+                   "deny_political_use":  true,
+                   "deny_general_generation":  true,
+                   "deny_face_swaps":  true
+               },
+    "top_candidates":  [
+
+                       ],
+    "subject_id":  "042e251d-265b-4efa-adb9-4f1faa8e3bd7",
+    "cross_embedding_match":  true,
+    "is_provisional":  false,
+    "requester_id":  "test"
+}

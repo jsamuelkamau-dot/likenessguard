@@ -1,0 +1,1 @@
+{"httpMethod":"POST","path":"/consent/check","body":"{\"image\":\"dGVzdA==\",\"usage_type\":\"SELF_EDIT\",\"requester_id\":\"gpt\"}"}

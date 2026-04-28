@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 1 Improvements Test - EasyPiky</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #0a1612;
+      color: #00ff88;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+      text-align: center;
+    }
+    
+    .test-category {
+      background: rgba(0, 255, 136, 0.05);
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .test-category h2 {
+      color: #00ff88;
+      margin-top: 0;
+    }
+    
+    .test-link {
+      display: inline-block;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      text-decoration: none;
+      border-radius: 8px;
+      margin: 10px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    .test-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.5);
+    }
+    
+    .test-link.high-risk {
+      background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+      color: white;
+    }
+    
+    .test-link.medium-risk {
+      background: linear-gradient(135deg, #ffaa00 0%, #ff8800 100%);
+      color: #0a1612;
+    }
+    
+    .description {
+      color: #7dd3ae;
+      font-size: 14px;
+      margin: 10px 0;
+    }
+    
+    .expected {
+      background: rgba(255, 170, 0, 0.1);
+      border-left: 3px solid #ffaa00;
+      padding: 10px;
+      margin: 10px 0;
+      color: #ffaa00;
+      font-size: 13px;
+    }
+    
+    .note {
+      background: rgba(0, 170, 255, 0.1);
+      border-left: 3px solid #00aaff;
+      padding: 10px;
+      margin: 20px 0;
+      color: #00aaff;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Phase 1 Improvements Test Suite</h1>
+  
+  <div class="note">
+    <strong>📝 Note:</strong> These test links demonstrate the new detection capabilities.
+    Click each link to see how EasyPiky now detects sophisticated attacks.
+    The extension should show detailed explanations of what was detected.
+  </div>
+
+  <!-- Advanced Homoglyph Tests -->
+  <div class="test-category">
+    <h2>1. Advanced Homoglyph Detection</h2>
+    <p class="description">Tests detection of visually similar characters from different alphabets</p>
+    
+    <div>
+      <a href="https://xn--pple-43d.com" class="test-link high-risk">
+        Punycode: аpple.com (Cyrillic 'а')
+      </a>
+      <div class="expected">
+        Expected: 85-95% risk | "Advanced homoglyph attack detected (mixed-scripts, confusable-characters)"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://paypa1.com" class="test-link high-risk">
+        Number Substitution: paypa1.com
+      </a>
+      <div class="expected">
+        Expected: 75-85% risk | "Advanced homoglyph attack detected (confusable-characters)" | "Mimics: paypal"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://g00gle.com" class="test-link high-risk">
+        Zero Substitution: g00gle.com
+      </a>
+      <div class="expected">
+        Expected: 75-85% risk | "Advanced homoglyph attack detected (confusable-characters)" | "Mimics: google"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://micr0soft.com" class="test-link high-risk">
+        Mixed Substitution: micr0soft.com
+      </a>
+      <div class="expected">
+        Expected: 75-85% risk | "Advanced homoglyph attack detected" | "Mimics: microsoft"
+      </div>
+    </div>
+  </div>
+
+  <!-- Social Engineering Tests -->
+  <div class="test-category">
+    <h2>2. Social Engineering Detection</h2>
+    <p class="description">Tests detection of psychological manipulation tactics in URLs</p>
+    
+    <div>
+      <a href="https://verify-account-now.com" class="test-link high-risk">
+        Account Verification: verify-account-now.com
+      </a>
+      <div class="expected">
+        Expected: 70-80% risk | "Social engineering tactics: account-verification, urgency"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://suspended-account.xyz" class="test-link high-risk">
+        Account Suspension: suspended-account.xyz
+      </a>
+      <div class="expected">
+        Expected: 75-85% risk | "Social engineering tactics: account-suspension" | "Suspicious TLD (.xyz)"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://prize-winner-claim.tk" class="test-link high-risk">
+        Prize Scam: prize-winner-claim.tk
+      </a>
+      <div class="expected">
+        Expected: 80-90% risk | "Social engineering tactics: prize-scam" | "Suspicious TLD (.tk)"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://payment-failed-update.com" class="test-link high-risk">
+        Payment Failure: payment-failed-update.com
+      </a>
+      <div class="expected">
+        Expected: 70-80% risk | "Social engineering tactics: payment-failure, payment-update"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://security-alert-unusual-activity.com" class="test-link high-risk">
+        Security Alert: security-alert-unusual-activity.com
+      </a>
+      <div class="expected">
+        Expected: 75-85% risk | "Social engineering tactics: security-alert, suspicious-activity"
+      </div>
+    </div>
+  </div>
+
+  <!-- Combined Attack Tests -->
+  <div class="test-category">
+    <h2>3. Combined Attack Vectors</h2>
+    <p class="description">Tests multiple sophisticated techniques combined</p>
+    
+    <div>
+      <a href="https://paypa1-verify-account.tk" class="test-link high-risk">
+        Homoglyph + Social Eng + Bad TLD
+      </a>
+      <div class="expected">
+        Expected: 90-95% risk | Multiple detection methods triggered
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://аmazon-suspended-account.xyz" class="test-link high-risk">
+        Cyrillic + Social Eng + Bad TLD
+      </a>
+      <div class="expected">
+        Expected: 90-95% risk | "Advanced homoglyph" + "Social engineering" + "Suspicious TLD"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://g00gle-security-alert.com" class="test-link high-risk">
+        Number Sub + Social Eng
+      </a>
+      <div class="expected">
+        Expected: 85-90% risk | "Advanced homoglyph" + "Social engineering tactics"
+      </div>
+    </div>
+  </div>
+
+  <!-- URL Shortener Tests -->
+  <div class="test-category">
+    <h2>4. URL Shortener Detection</h2>
+    <p class="description">Tests detection of hidden destinations through URL shorteners</p>
+    
+    <div>
+      <a href="https://bit.ly/test123" class="test-link medium-risk">
+        Bit.ly Shortener
+      </a>
+      <div class="expected">
+        Expected: Will attempt to follow redirect | May show "Redirect through URL shortener"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://tinyurl.com/test456" class="test-link medium-risk">
+        TinyURL Shortener
+      </a>
+      <div class="expected">
+        Expected: Will attempt to follow redirect | May show redirect chain analysis
+      </div>
+    </div>
+    
+    <p class="note">
+      <strong>Note:</strong> Redirect analysis may take 1-2 seconds as it follows the chain.
+      This is normal and provides better protection.
+    </p>
+  </div>
+
+  <!-- Baseline Tests (Should Still Work) -->
+  <div class="test-category">
+    <h2>5. Baseline Tests (Existing Detection)</h2>
+    <p class="description">Verify existing detection methods still work correctly</p>
+    
+    <div>
+      <a href="https://google.com" class="test-link" style="background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);">
+        Safe: google.com
+      </a>
+      <div class="expected">
+        Expected: 5% risk | Opens immediately | "Known legitimate website"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://example.xyz" class="test-link medium-risk">
+        Medium Risk: example.xyz
+      </a>
+      <div class="expected">
+        Expected: 40-50% risk | "Suspicious TLD (.xyz)"
+      </div>
+    </div>
+    
+    <div>
+      <a href="https://paypal-secure-login.tk" class="test-link high-risk">
+        High Risk: paypal-secure-login.tk
+      </a>
+      <div class="expected">
+        Expected: 80-90% risk | "Suspicious subdomain" + "Suspicious TLD"
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Test -->
+  <div class="test-category">
+    <h2>6. Performance Verification</h2>
+    <p class="description">Verify analysis speed remains fast</p>
+    
+    <div class="note">
+      <strong>⏱️ Performance Target:</strong> Analysis should complete in <100ms (excluding redirect following).
+      Check browser console for timing logs.
+    </div>
+    
+    <div>
+      <a href="https://test-performance-check.com" class="test-link medium-risk">
+        Performance Test Link
+      </a>
+      <div class="expected">
+        Expected: Check console for "Analysis time: XX ms" | Should be <100ms
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top: 40px;">
+    <h3 style="margin-top: 0;">📊 What to Look For:</h3>
+    <ul>
+      <li><strong>More Detailed Explanations:</strong> Modal should show specific techniques detected</li>
+      <li><strong>Higher Risk Scores:</strong> Sophisticated attacks should score 75-95%</li>
+      <li><strong>Multiple Detection Methods:</strong> Combined attacks trigger multiple detectors</li>
+      <li><strong>Fast Performance:</strong> Analysis still completes quickly</li>
+      <li><strong>Clear Reasoning:</strong> Users understand why something was flagged</li>
+    </ul>
+    
+    <h3>🔍 Console Logs to Check:</h3>
+    <ul>
+      <li>"Advanced homoglyph attack detected"</li>
+      <li>"Social engineering tactics: [tactics]"</li>
+      <li>"Mimics: [brand name]"</li>
+      <li>"Analysis time: XX ms"</li>
+    </ul>
+  </div>
+
+  <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(0, 255, 136, 0.2);">
+    <p style="color: #7dd3ae;">
+      🛡️ Protected by <strong style="color: #00ff88;">EasyPiky v1.1.0</strong> - Phase 1 Improvements
+    </p>
+    <p style="color: #4a9d7a; font-size: 12px;">
+      Advanced Homoglyph Detection | Social Engineering Detection | Redirect Chain Analysis
+    </p>
+  </div>
+</body>
+</html>

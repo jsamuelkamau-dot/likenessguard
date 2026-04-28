@@ -1,0 +1,1 @@
+{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Resource":"arn:aws:s3:::likenessguard-jwks-538784191640/temp-images/*","Action":["s3:PutObject","s3:GetObject","s3:GeneratePresignedUrl"]}]}

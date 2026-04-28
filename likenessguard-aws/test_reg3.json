@@ -1,0 +1,1 @@
+{"httpMethod":"POST","path":"/register","body":"{\"user_id\":\"test\",\"photo_keys\":[\"s3://test\"],\"consent_policy\":{}}"}

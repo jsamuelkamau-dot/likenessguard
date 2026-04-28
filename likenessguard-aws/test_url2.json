@@ -1,0 +1,1 @@
+{"httpMethod":"POST","path":"/v2/consent/check","body":"{\"image_url\":\"https://picsum.photos/id/1005/400/400\",\"usage_type\":\"GENERAL_GENERATION\",\"requester_id\":\"gpt\"}"}

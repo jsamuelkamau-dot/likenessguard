@@ -1,0 +1,1 @@
+{"statusCode": 400, "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type,Authorization"}, "body": "{\"error\": \"Failed to fetch image from URL: HTTP Error 429: Use thumbnail steps listed on https://w.wiki/GHai. Please contact noc@wikimedia.org \"}"}

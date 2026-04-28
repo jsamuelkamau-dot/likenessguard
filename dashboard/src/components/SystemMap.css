@@ -1,0 +1,127 @@
+/**
+ * SystemMap Component Styles
+ * Cyberpunk-themed network visualization with glassmorphism effects
+ */
+
+.system-map-container {
+  width: 100%;
+  height: 500px;
+  background: rgba(26, 31, 46, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.system-map-container svg {
+  display: block;
+  background: #0a0e1a;
+}
+
+/* Edge animations */
+.edge-line {
+  transition: stroke-opacity 0.3s ease;
+  animation: pulse-edge 3s ease-in-out infinite;
+}
+
+.edge-line:hover {
+  stroke-opacity: 0.8 !important;
+}
+
+@keyframes pulse-edge {
+  0%, 100% {
+    stroke-opacity: 0.3;
+  }
+  50% {
+    stroke-opacity: 0.5;
+  }
+}
+
+/* Node styles */
+.node-group {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.node-circle {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.node-group:hover .node-circle {
+  filter: drop-shadow(0 0 16px currentColor);
+  transform: scale(1.1);
+  transform-origin: center;
+}
+
+.node-label {
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 8px currentColor;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+.node-group:hover .node-label {
+  font-size: 13px;
+  text-shadow: 0 0 12px currentColor;
+}
+
+/* Glow animations for different node types */
+@keyframes glow-cyan {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(0, 217, 255, 0.9));
+  }
+}
+
+@keyframes glow-magenta {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(255, 0, 255, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255, 0, 255, 0.8));
+  }
+}
+
+@keyframes glow-green {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(0, 255, 170, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(0, 255, 170, 0.8));
+  }
+}
+
+/* Apply animations based on node type (via parent class) */
+.node-group:nth-child(1) .node-circle {
+  animation: glow-cyan 2s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .system-map-container {
+    height: 400px;
+  }
+  
+  .node-label {
+    font-size: 9px;
+  }
+  
+  .node-group:hover .node-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .system-map-container {
+    height: 300px;
+  }
+  
+  .node-label {
+    font-size: 8px;
+  }
+}

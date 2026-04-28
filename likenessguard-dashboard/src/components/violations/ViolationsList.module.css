@@ -1,0 +1,222 @@
+/**
+ * ViolationsList Component Styles
+ * 
+ * Futuristic AI cybersecurity theme with alert colors for violations
+ * Requirements: 6.2, 6.3, 6.4, 6.5, 6.6
+ */
+
+.container {
+  background: #0E1A2F; /* theme.backgrounds.tertiary */
+  border: 1px solid #1B2948; /* theme.depth.grid */
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.loading,
+.empty {
+  color: #A9B4C8; /* theme.text.secondary */
+  font-size: 1rem;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+/* Empty State Styling */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #62D84E 0%, #4BC236 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(98, 216, 78, 0.3);
+}
+
+.emptyIcon::before {
+  content: '✓';
+  color: #050B18;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.emptyTitle {
+  color: #E6ECF5; /* theme.text.primary */
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.emptyMessage {
+  color: #A9B4C8; /* theme.text.secondary */
+  font-size: 0.875rem;
+  max-width: 400px;
+}
+
+/* Grid Layout for Violations */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* Violation Card */
+.card {
+  background: #0B1224; /* theme.backgrounds.secondary */
+  border: 1px solid #FF7A45; /* theme.status.error - alert color */
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  transition: all 250ms ease-in-out;
+}
+
+.card:hover {
+  border-color: #FF9466;
+  box-shadow: 0 0 20px rgba(255, 122, 69, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Alert Indicator */
+.alertIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #FF7A45 0%, #FF5722 100%);
+  border-radius: 8px 0 0 8px;
+}
+
+/* Card Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-left: 12px;
+}
+
+.title {
+  color: #FF7A45; /* theme.status.error */
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timestamp {
+  color: #6E7C99; /* theme.text.tertiary */
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Card Details */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 12px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.label {
+  color: #A9B4C8; /* theme.text.secondary */
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.value {
+  color: #E6ECF5; /* theme.text.primary */
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+}
+
+.reasonValue {
+  color: #FF7A45; /* theme.status.error */
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Card Footer */
+.footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  padding-left: 12px;
+  border-top: 1px solid #1B2948; /* theme.depth.grid */
+}
+
+.queryId {
+  color: #6E7C99; /* theme.text.tertiary */
+  font-size: 0.75rem;
+  font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+/* Responsive Design for Tablet */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .title {
+    font-size: 0.875rem;
+  }
+
+  .timestamp {
+    font-size: 0.6875rem;
+  }
+
+  .detailRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .label {
+    min-width: auto;
+    font-size: 0.75rem;
+  }
+
+  .value,
+  .reasonValue {
+    text-align: left;
+    font-size: 0.8125rem;
+  }
+}

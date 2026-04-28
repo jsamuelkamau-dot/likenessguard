@@ -1,0 +1,172 @@
+[
+  {
+    "log_id": "test-log-001",
+    "ai_service": "openai",
+    "endpoint": "/v1/completions",
+    "data_sources": [
+      "postgresql://prod-db",
+      "redis://cache"
+    ],
+    "sensitive_data_types": [
+      "email",
+      "phone_number"
+    ],
+    "risk_score": 39,
+    "request_method": "POST",
+    "request_size_bytes": 22013,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-002",
+    "ai_service": "anthropic",
+    "endpoint": "/v1/messages",
+    "data_sources": [
+      "s3://customer-data",
+      "dynamodb://user-profiles"
+    ],
+    "sensitive_data_types": [
+      "api_key",
+      "password"
+    ],
+    "risk_score": 12,
+    "request_method": "POST",
+    "request_size_bytes": 33302,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-003",
+    "ai_service": "bedrock",
+    "endpoint": "/model/anthropic.claude-v2/invoke",
+    "data_sources": [
+      "mysql://analytics",
+      "elasticsearch://logs"
+    ],
+    "sensitive_data_types": [
+      "ssn",
+      "credit_card"
+    ],
+    "risk_score": 30,
+    "request_method": "POST",
+    "request_size_bytes": 17959,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-004",
+    "ai_service": "openai",
+    "endpoint": "/v1/embeddings",
+    "data_sources": [
+      "mongodb://sessions",
+      "file:///var/data/users.csv"
+    ],
+    "sensitive_data_types": [
+      "email",
+      "address"
+    ],
+    "risk_score": 55,
+    "request_method": "POST",
+    "request_size_bytes": 7293,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-005",
+    "ai_service": "anthropic",
+    "endpoint": "/v1/messages",
+    "data_sources": [
+      "api://internal/users",
+      "api://external/crm"
+    ],
+    "sensitive_data_types": [
+      "api_key",
+      "oauth_token"
+    ],
+    "risk_score": 68,
+    "request_method": "POST",
+    "request_size_bytes": 10043,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-006",
+    "ai_service": "bedrock",
+    "endpoint": "/model/anthropic.claude-v2/invoke",
+    "data_sources": [
+      "postgresql://prod-db",
+      "redis://cache"
+    ],
+    "sensitive_data_types": [
+      "email",
+      "phone_number"
+    ],
+    "risk_score": 58,
+    "request_method": "POST",
+    "request_size_bytes": 47351,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-007",
+    "ai_service": "openai",
+    "endpoint": "/v1/embeddings",
+    "data_sources": [
+      "s3://customer-data",
+      "dynamodb://user-profiles"
+    ],
+    "sensitive_data_types": [
+      "api_key",
+      "password"
+    ],
+    "risk_score": 47,
+    "request_method": "POST",
+    "request_size_bytes": 19099,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-008",
+    "ai_service": "anthropic",
+    "endpoint": "/v1/messages",
+    "data_sources": [
+      "mysql://analytics",
+      "elasticsearch://logs"
+    ],
+    "sensitive_data_types": [
+      "ssn",
+      "credit_card"
+    ],
+    "risk_score": 70,
+    "request_method": "POST",
+    "request_size_bytes": 45417,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-009",
+    "ai_service": "bedrock",
+    "endpoint": "/model/amazon.titan-text/invoke",
+    "data_sources": [
+      "mongodb://sessions",
+      "file:///var/data/users.csv"
+    ],
+    "sensitive_data_types": [
+      "email",
+      "address"
+    ],
+    "risk_score": 74,
+    "request_method": "POST",
+    "request_size_bytes": 6828,
+    "response_status": 200
+  },
+  {
+    "log_id": "test-log-010",
+    "ai_service": "openai",
+    "endpoint": "/v1/embeddings",
+    "data_sources": [
+      "api://internal/users",
+      "api://external/crm"
+    ],
+    "sensitive_data_types": [
+      "api_key",
+      "oauth_token"
+    ],
+    "risk_score": 89,
+    "request_method": "POST",
+    "request_size_bytes": 29708,
+    "response_status": 200
+  }
+]

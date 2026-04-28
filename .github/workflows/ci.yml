@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ── Python Tests & Lint ────────────────────────────────────────────────────
+  python-tests:
+    name: Python Tests & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          cd likenessguard-aws
+          pip install -r requirements-dev.txt
+
+      - name: Lint with flake8
+        run: |
+          cd likenessguard-aws
+          flake8 src/ --max-line-length=120 --ignore=E501,W503
+
+      - name: Run property-based tests
+        run: |
+          cd likenessguard-aws
+          python -m pytest src/tests/test_v2_properties.py -v --tb=short
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+
+  # ── Dashboard Tests & Build ────────────────────────────────────────────────
+  dashboard:
+    name: Dashboard Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: likenessguard-dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd likenessguard-dashboard
+          npm ci
+
+      - name: TypeScript check
+        run: |
+          cd likenessguard-dashboard
+          npx tsc --noEmit
+
+      - name: Build
+        run: |
+          cd likenessguard-dashboard
+          npm run build
+        env:
+          VITE_API_BASE_URL: https://example.execute-api.us-east-1.amazonaws.com/v1
+
+  # ── Secrets Scan ──────────────────────────────────────────────────────────
+  secrets-scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for secrets with gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── MCP Server Lint ───────────────────────────────────────────────────────
+  mcp-server:
+    name: MCP Server Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          cd likenessguard-mcp
+          pip install -r requirements.txt flake8
+
+      - name: Lint
+        run: |
+          cd likenessguard-mcp
+          flake8 server.py grok_integration.py openai_integration.py --max-line-length=120 --ignore=E501

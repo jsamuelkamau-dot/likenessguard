@@ -1,0 +1,177 @@
+/**
+ * AlertCard Component Styles
+ * High-risk alert cards with glassmorphism and pulsing animation
+ */
+
+.alert-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.alert-card {
+  /* Glassmorphism styling */
+  background: rgba(26, 31, 46, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 0, 85, 0.4);
+  border-radius: 12px;
+  padding: 1.5rem;
+  
+  /* Red color scheme for high-risk */
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+  
+  /* Responsive layout */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Pulsing animation for high-risk alerts */
+.alert-card.pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 0, 85, 0.3),
+                0 0 40px rgba(255, 0, 85, 0.2);
+    border-color: rgba(255, 0, 85, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 0, 85, 0.6),
+                0 0 60px rgba(255, 0, 85, 0.4),
+                0 0 80px rgba(255, 0, 85, 0.2);
+    border-color: rgba(255, 0, 85, 0.8);
+  }
+}
+
+.alert-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 0, 85, 0.2);
+}
+
+.alert-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alert-icon {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 8px rgba(255, 0, 85, 0.6));
+}
+
+.alert-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ff0055;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+}
+
+.dismiss-button {
+  background: rgba(255, 0, 85, 0.1);
+  border: 1px solid rgba(255, 0, 85, 0.3);
+  border-radius: 6px;
+  color: #ff0055;
+  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.dismiss-button:hover {
+  background: rgba(255, 0, 85, 0.2);
+  border-color: rgba(255, 0, 85, 0.6);
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+  transform: scale(1.1);
+}
+
+.dismiss-button:active {
+  transform: scale(0.95);
+}
+
+.alert-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.alert-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.alert-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.alert-value {
+  font-size: 1rem;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.alert-value.risk-score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ff0055;
+  text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .alert-card {
+    padding: 1rem;
+  }
+  
+  .alert-text {
+    font-size: 1rem;
+  }
+  
+  .alert-icon {
+    font-size: 1.25rem;
+  }
+  
+  .alert-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .alert-value.risk-score {
+    font-size: 1.25rem;
+  }
+}
+
+/* Responsive design for larger screens */
+@media (min-width: 1920px) {
+  .alert-card {
+    padding: 2rem;
+  }
+  
+  .alert-text {
+    font-size: 1.5rem;
+  }
+  
+  .alert-value.risk-score {
+    font-size: 2rem;
+  }
+}

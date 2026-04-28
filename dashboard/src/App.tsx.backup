@@ -1,0 +1,166 @@
+﻿import React, { useState } from 'react';
+import { LoginCredentials } from '../types';
+import { theme } from '../styles/theme';
+
+interface AuthFormProps {
+  onLogin: (credentials: LoginCredentials) => Promise<void>;
+  error?: string;
+}
+
+const AuthForm: React.FC<AuthFormProps> = ({ onLogin, error }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await onLogin({ email, password });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.formCard}>
+        <h1 style={styles.title}>Interpose</h1>
+        <p style={styles.subtitle}>AI Access Intelligence Platform</p>
+        
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.inputGroup}>
+            <label htmlFor="email" style={styles.label}>Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={styles.input}
+              placeholder="your@email.com"
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label htmlFor="password" style={styles.label}>Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={styles.input}
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && (
+            <div style={styles.error} role="alert">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              ...styles.button,
+              ...(isLoading ? styles.buttonDisabled : {})
+            }}
+          >
+            {isLoading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '100vh',
+    background: theme.colors.background.primary,
+    padding: '20px'
+  },
+  formCard: {
+    background: theme.effects.glassMorphism.background,
+    backdropFilter: theme.effects.glassMorphism.backdropFilter,
+    border: theme.effects.glassMorphism.border,
+    borderRadius: '12px',
+    padding: '40px',
+    width: '100%',
+    maxWidth: '400px',
+    boxShadow: `0 0 30px ${theme.colors.accent.cyan}33`
+  },
+  title: {
+    color: theme.colors.accent.cyan,
+    fontSize: '32px',
+    fontWeight: 'bold',
+    margin: '0 0 8px 0',
+    textAlign: 'center',
+    textShadow: `0 0 10px ${theme.colors.accent.cyan}80`
+  },
+  subtitle: {
+    color: theme.colors.text.secondary,
+    fontSize: '14px',
+    margin: '0 0 32px 0',
+    textAlign: 'center'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px'
+  },
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  },
+  label: {
+    color: theme.colors.text.primary,
+    fontSize: '14px',
+    fontWeight: '500'
+  },
+  input: {
+    background: theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.accent.cyan}40`,
+    borderRadius: '6px',
+    color: theme.colors.text.primary,
+    fontSize: '14px',
+    padding: '12px',
+    outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s'
+  },
+  button: {
+    background: `linear-gradient(135deg, ${theme.colors.accent.cyan}, ${theme.colors.accent.magenta})`,
+    border: 'none',
+    borderRadius: '6px',
+    color: theme.colors.text.primary,
+    cursor: 'pointer',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    padding: '14px',
+    marginTop: '8px',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+    boxShadow: `0 0 20px ${theme.colors.accent.cyan}40`
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+    cursor: 'not-allowed'
+  },
+  error: {
+    background: `${theme.colors.accent.red}20`,
+    border: `1px solid ${theme.colors.accent.red}`,
+    borderRadius: '6px',
+    color: theme.colors.accent.red,
+    fontSize: '14px',
+    padding: '12px',
+    textAlign: 'center'
+  }
+};
+
+export default AuthForm;

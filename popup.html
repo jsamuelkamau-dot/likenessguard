@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 320px;
+      min-height: 400px;
+      padding: 0;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a1612;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #0d2818 0%, #1a4d2e 100%);
+      color: #00ff88;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 255, 136, 0.2);
+    }
+    
+    .header h2 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .header p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 20px;
+    }
+    
+    .status-card {
+      background: linear-gradient(135deg, #0f2419 0%, #1a3d2e 100%);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0, 255, 136, 0.15);
+      border-left: 4px solid #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .status-card.inactive {
+      border-left-color: #ff4444;
+      border-color: rgba(255, 68, 68, 0.2);
+    }
+    
+    .status-card.warning {
+      border-left-color: #ffaa00;
+      border-color: rgba(255, 170, 0, 0.2);
+    }
+    
+    .status-icon {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      box-shadow: 0 0 8px currentColor;
+    }
+    
+    .status-icon.active {
+      background: #00ff88;
+    }
+    
+    .status-icon.inactive {
+      background: #ff4444;
+    }
+    
+    .status-icon.warning {
+      background: #ffaa00;
+    }
+    
+    .status-title {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 4px;
+      color: #00ff88;
+    }
+    
+    .status-subtitle {
+      font-size: 14px;
+      color: #7dd3ae;
+      margin-bottom: 8px;
+    }
+    
+    .trial-info {
+      background: linear-gradient(135deg, #0d2818 0%, #1a3d2e 100%);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0, 255, 136, 0.1);
+    }
+    
+    .trial-info h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #00ff88;
+    }
+    
+    .trial-progress {
+      background: rgba(0, 255, 136, 0.1);
+      border-radius: 10px;
+      height: 8px;
+      margin: 8px 0;
+      overflow: hidden;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .trial-progress-bar {
+      background: linear-gradient(90deg, #00ff88, #00cc6a);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+    
+    .trial-days {
+      font-size: 12px;
+      color: #7dd3ae;
+      text-align: center;
+    }
+    
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #00cc6a 0%, #00aa55 100%);
+      box-shadow: 0 6px 25px rgba(0, 255, 136, 0.5);
+    }
+    
+    .btn-secondary {
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(0, 255, 136, 0.2);
+      border-color: #00ff88;
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      font-weight: 600;
+    }
+    
+    .btn-success:hover {
+      background: linear-gradient(135deg, #00cc6a 0%, #00aa55 100%);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #0f2419 0%, #1a3d2e 100%);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .stat-number {
+      font-size: 20px;
+      font-weight: 600;
+      color: #00ff88;
+      margin-bottom: 4px;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #7dd3ae;
+    }
+    
+    .footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(0, 255, 136, 0.2);
+      background: #0d2818;
+      text-align: center;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 8px;
+    }
+    
+    .footer-links a {
+      font-size: 12px;
+      color: #7dd3ae;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: #00ff88;
+    }
+    
+    .version {
+      font-size: 11px;
+      color: #4a9d7a;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #7dd3ae;
+    }
+    
+    .error {
+      background: rgba(255, 68, 68, 0.2);
+      color: #ff8888;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>EasyPiky</h2>
+    <p>Anti-Phishing Protection</p>
+  </div>
+  
+  <div class="content">
+    <div id="loading" class="loading">
+      <p>Loading status...</p>
+    </div>
+    
+    <div id="error" class="error" style="display: none;">
+      <p id="error-message">Failed to load extension status</p>
+    </div>
+    
+    <div id="main-content" style="display: none;">
+      <div id="status-card" class="status-card">
+        <div class="status-title">
+          <span id="status-icon" class="status-icon active"></span>
+          <span id="status-text">Protection Active</span>
+        </div>
+        <div id="status-subtitle" class="status-subtitle">
+          All links are being monitored
+        </div>
+      </div>
+      
+      <div id="trial-info" class="trial-info">
+        <h4>Trial Status</h4>
+        <div class="trial-progress">
+          <div id="trial-progress-bar" class="trial-progress-bar" style="width: 70%"></div>
+        </div>
+        <div id="trial-days" class="trial-days">
+          10 days remaining
+        </div>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div id="trusted-domains-count" class="stat-number">5</div>
+          <div class="stat-label">Trusted Domains</div>
+        </div>
+        <div class="stat-card">
+          <div id="trusted-emails-count" class="stat-number">12</div>
+          <div class="stat-label">Trusted Emails</div>
+        </div>
+      </div>
+      
+      <div class="quick-actions">
+        <button id="verify-email-btn" class="btn btn-primary">
+          Verify Email Address
+        </button>
+        <button id="add-domain-btn" class="btn btn-secondary">
+          Add Trusted Domain
+        </button>
+        <button id="settings-btn" class="btn btn-secondary">
+          Open Settings
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <div class="footer-links">
+      <a href="#" id="help-link">Help</a>
+      <a href="#" id="privacy-link">Privacy</a>
+      <a href="#" id="feedback-link">Feedback</a>
+    </div>
+    <div class="version">v1.0.0</div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

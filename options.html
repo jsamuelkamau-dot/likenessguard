@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>EasyPiky Settings</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #0a1612;
+      line-height: 1.6;
+      color: #b8e6d5;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #0d2818 0%, #1a4d2e 100%);
+      color: #00ff88;
+      padding: 40px 20px;
+      text-align: center;
+      margin-bottom: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+    }
+    
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 32px;
+      font-weight: 600;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    }
+    
+    .header p {
+      margin: 0;
+      font-size: 16px;
+      opacity: 0.9;
+      color: #7dd3ae;
+    }
+    
+    .nav-tabs {
+      display: flex;
+      background: linear-gradient(135deg, #0f2419 0%, #1a3d2e 100%);
+      border-radius: 12px;
+      padding: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .nav-tab {
+      flex: 1;
+      padding: 12px 20px;
+      text-align: center;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+      color: #7dd3ae;
+    }
+    
+    .nav-tab.active {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    }
+    
+    .nav-tab:hover:not(.active) {
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .section {
+      background: linear-gradient(135deg, #0f2419 0%, #1a3d2e 100%);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .section h3 {
+      margin: 0 0 16px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    
+    .section p {
+      margin: 0 0 16px 0;
+      color: #7dd3ae;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #00ff88;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s;
+      background: rgba(0, 255, 136, 0.05);
+      color: #b8e6d5;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: #00ff88;
+      box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
+      background: rgba(0, 255, 136, 0.1);
+    }
+    
+    .form-control::placeholder {
+      color: #4a9d7a;
+    }
+    
+    .form-check {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .form-check input {
+      margin-right: 12px;
+      transform: scale(1.2);
+      accent-color: #00ff88;
+    }
+    
+    .form-check label {
+      margin: 0;
+      cursor: pointer;
+      color: #b8e6d5;
+    }
+    
+    .form-check label strong {
+      color: #00ff88;
+    }
+    
+    .form-check label small {
+      color: #7dd3ae;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #00cc6a 0%, #00aa55 100%);
+      box-shadow: 0 6px 25px rgba(0, 255, 136, 0.5);
+    }
+    
+    .btn-secondary {
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(0, 255, 136, 0.2);
+      border-color: #00ff88;
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      font-weight: 600;
+    }
+    
+    .btn-success:hover {
+      background: linear-gradient(135deg, #00cc6a 0%, #00aa55 100%);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #cc0000 0%, #aa0000 100%);
+      box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #00ff88;
+      color: #00ff88;
+    }
+    
+    .btn-outline:hover {
+      background: #00ff88;
+      color: #0a1612;
+    }
+    
+    .list-group {
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(0, 255, 136, 0.05);
+    }
+    
+    .list-group-item {
+      padding: 16px;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #b8e6d5;
+    }
+    
+    .list-group-item:last-child {
+      border-bottom: none;
+    }
+    
+    .list-group-item:nth-child(even) {
+      background: rgba(0, 255, 136, 0.03);
+    }
+    
+    .domain-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .domain-icon {
+      width: 20px;
+      height: 20px;
+      background: #00ff88;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0a1612;
+      font-size: 12px;
+      box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+    }
+    
+    .trial-status {
+      background: linear-gradient(135deg, #0d2818 0%, #1a3d2e 100%);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0, 255, 136, 0.15);
+    }
+    
+    .trial-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .trial-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #00ff88;
+      margin: 0;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    
+    .trial-badge {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #0a1612;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+    }
+    
+    .trial-progress {
+      background: rgba(0, 255, 136, 0.1);
+      border-radius: 10px;
+      height: 12px;
+      margin: 12px 0;
+      overflow: hidden;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .trial-progress-bar {
+      background: linear-gradient(90deg, #00ff88, #00cc6a);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+    
+    .trial-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .trial-stat {
+      text-align: center;
+    }
+    
+    .trial-stat-number {
+      font-size: 24px;
+      font-weight: 600;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+    
+    .trial-stat-label {
+      font-size: 12px;
+      color: #7dd3ae;
+      margin-top: 4px;
+    }
+    
+    .alert {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .alert-success {
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .alert-warning {
+      background: rgba(255, 170, 0, 0.1);
+      color: #ffaa00;
+      border: 1px solid rgba(255, 170, 0, 0.3);
+    }
+    
+    .alert-danger {
+      background: rgba(255, 68, 68, 0.1);
+      color: #ff8888;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #0f2419 0%, #1a3d2e 100%);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: 600;
+      color: #00ff88;
+      margin-bottom: 8px;
+      text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #7dd3ae;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #7dd3ae;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #7dd3ae;
+    }
+    
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7dd3ae;
+      font-size: 14px;
+    }
+    
+    .footer a {
+      color: #00ff88;
+      text-decoration: none;
+      margin: 0 8px;
+      transition: color 0.2s;
+    }
+    
+    .footer a:hover {
+      color: #00cc6a;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>EasyPiky Settings</h1>
+      <p>Configure your anti-phishing protection preferences</p>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="general">General</button>
+      <button class="nav-tab" data-tab="domains">Trusted Domains</button>
+      <button class="nav-tab" data-tab="emails">Trusted Emails</button>
+      <button class="nav-tab" data-tab="trial">Trial & Account</button>
+      <button class="nav-tab" data-tab="advanced">Advanced</button>
+    </div>
+
+    <!-- General Tab -->
+    <div id="general-tab" class="tab-content active">
+      <div class="section">
+        <h3>Protection Mode</h3>
+        <p>Choose how EasyPiky handles suspicious links</p>
+        
+        <div class="form-check">
+          <input type="checkbox" id="strict-mode" />
+          <label for="strict-mode">
+            <strong>Strict Mode</strong><br>
+            <small>Disable "proceed anyway" options for maximum security</small>
+          </label>
+        </div>
+        
+        <div class="form-check">
+          <input type="checkbox" id="detailed-explanations" />
+          <label for="detailed-explanations">
+            <strong>Show Detailed Explanations</strong><br>
+            <small>Display technical details about detected threats</small>
+          </label>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div id="links-analyzed" class="stat-number">0</div>
+          <div class="stat-label">Links Analyzed</div>
+        </div>
+        <div class="stat-card">
+          <div id="threats-blocked" class="stat-number">0</div>
+          <div class="stat-label">Threats Blocked</div>
+        </div>
+        <div class="stat-card">
+          <div id="trusted-domains-stat" class="stat-number">0</div>
+          <div class="stat-label">Trusted Domains</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trusted Domains Tab -->
+    <div id="domains-tab" class="tab-content">
+      <div class="section">
+        <h3>Trusted Domains</h3>
+        <p>Domains in this list will always be considered safe</p>
+        
+        <div class="form-group">
+          <label for="new-domain">Add New Domain</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="new-domain" class="form-control" placeholder="example.com" />
+            <button id="add-domain-btn" class="btn btn-primary">Add</button>
+          </div>
+        </div>
+        
+        <div id="domains-list" class="list-group">
+          <div class="loading">Loading trusted domains...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trusted Emails Tab -->
+    <div id="emails-tab" class="tab-content">
+      <div class="section">
+        <h3>Trusted Email Addresses</h3>
+        <p>Email addresses in this list are considered trusted senders</p>
+        
+        <div class="form-group">
+          <label for="new-email">Add New Email</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="email" id="new-email" class="form-control" placeholder="sender@example.com" />
+            <button id="add-email-btn" class="btn btn-primary">Add</button>
+          </div>
+        </div>
+        
+        <div class="alert alert-warning">
+          <strong>Privacy Note:</strong> Email addresses are stored as secure hashes. 
+          The original addresses cannot be recovered from the stored data.
+        </div>
+        
+        <div id="emails-list" class="list-group">
+          <div class="loading">Loading trusted emails...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trial & Account Tab -->
+    <div id="trial-tab" class="tab-content">
+      <div id="trial-status" class="trial-status">
+        <div class="trial-header">
+          <h3 class="trial-title">Trial Status</h3>
+          <span id="trial-badge" class="trial-badge">Active</span>
+        </div>
+        
+        <div class="trial-progress">
+          <div id="trial-progress-bar" class="trial-progress-bar" style="width: 70%"></div>
+        </div>
+        
+        <div class="trial-info">
+          <div class="trial-stat">
+            <div id="trial-days-remaining" class="trial-stat-number">10</div>
+            <div class="trial-stat-label">Days Remaining</div>
+          </div>
+          <div class="trial-stat">
+            <div id="trial-usage-percent" class="trial-stat-number">30%</div>
+            <div class="trial-stat-label">Trial Used</div>
+          </div>
+          <div class="trial-stat">
+            <div id="trial-expires-date" class="trial-stat-number">Dec 15</div>
+            <div class="trial-stat-label">Expires On</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Account Actions</h3>
+        <p>Manage your EasyPiky account and subscription</p>
+        
+        <button id="refresh-trial-btn" class="btn btn-secondary">Refresh Trial Status</button>
+        <button id="upgrade-btn" class="btn btn-primary">Upgrade to Pro</button>
+        <button id="export-settings-btn" class="btn btn-outline">Export Settings</button>
+      </div>
+    </div>
+
+    <!-- Advanced Tab -->
+    <div id="advanced-tab" class="tab-content">
+      <div class="section">
+        <h3>Advanced Settings</h3>
+        <p>Configure advanced protection features</p>
+        
+        <div class="form-check">
+          <input type="checkbox" id="performance-monitoring" />
+          <label for="performance-monitoring">
+            <strong>Performance Monitoring</strong><br>
+            <small>Collect anonymous performance data to improve the extension</small>
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Data Management</h3>
+        <p>Import, export, or reset your EasyPiky data</p>
+        
+        <div class="form-group">
+          <label for="import-file">Import Settings</label>
+          <input type="file" id="import-file" class="form-control" accept=".json" />
+          <button id="import-btn" class="btn btn-secondary" style="margin-top: 8px;">Import</button>
+        </div>
+        
+        <button id="reset-settings-btn" class="btn btn-danger">Reset All Settings</button>
+      </div>
+
+      <div class="section">
+        <h3>Debug Information</h3>
+        <p>Technical information for troubleshooting</p>
+        
+        <div class="form-group">
+          <label>Extension Version</label>
+          <div class="form-control" style="background: #f8f9fa;">v1.0.0</div>
+        </div>
+        
+        <div class="form-group">
+          <label>Last Analysis</label>
+          <div id="last-analysis" class="form-control" style="background: #f8f9fa;">Never</div>
+        </div>
+        
+        <button id="test-analysis-btn" class="btn btn-outline">Test Analysis Engine</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>
+        <a href="https://easypiky.com/help">Help & Documentation</a>
+        <a href="https://easypiky.com/privacy">Privacy Policy</a>
+        <a href="https://easypiky.com/terms">Terms of Service</a>
+        <a href="https://easypiky.com/contact">Contact Support</a>
+      </p>
+      <p>EasyPiky v1.0.0 - Protecting your digital life</p>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

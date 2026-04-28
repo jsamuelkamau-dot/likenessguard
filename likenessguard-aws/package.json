@@ -1,0 +1,17 @@
+{
+  "name": "likenessguard-aws-cors-fix",
+  "version": "1.0.0",
+  "description": "Programmatic CORS fix for LikenessGuard API Gateway",
+  "main": "fix-cors-programmatic.js",
+  "scripts": {
+    "fix-cors": "node fix-cors-programmatic.js",
+    "fix-cors-aggressive": "node fix-cors-aggressive.js",
+    "check-integration": "node check-and-fix-integration.js",
+    "check-db": "node check-database-data.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-api-gateway": "^3.0.0",
+    "@aws-sdk/client-dynamodb": "^3.995.0",
+    "@aws-sdk/lib-dynamodb": "^3.995.0"
+  }
+}

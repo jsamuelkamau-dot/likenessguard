@@ -1,0 +1,182 @@
+/* ConsentCheck Page Styles - Futuristic AI Cybersecurity Theme */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Info Card */
+.infoCard {
+  background: linear-gradient(135deg, rgba(123, 76, 255, 0.1) 0%, rgba(123, 76, 255, 0.05) 100%);
+  border: 1px solid rgba(123, 76, 255, 0.3);
+}
+
+.infoTitle {
+  color: #E6ECF5;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.infoDescription {
+  color: #A9B4C8;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+/* Configuration Section */
+.configSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.configField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.configLabel {
+  color: #E6ECF5;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.configSelect,
+.configInput {
+  padding: 12px 16px;
+  background: #0A1428;
+  border: 1px solid #1B2948;
+  border-radius: 8px;
+  color: #E6ECF5;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 250ms ease-in-out;
+}
+
+.configSelect:hover:not(:disabled),
+.configInput:hover:not(:disabled) {
+  border-color: #7B4CFF;
+}
+
+.configSelect:focus,
+.configInput:focus {
+  outline: none;
+  border-color: #7B4CFF;
+  box-shadow: 0 0 0 3px rgba(123, 76, 255, 0.2);
+}
+
+.configSelect:disabled,
+.configInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.configSelect option {
+  background: #0B1224;
+  color: #E6ECF5;
+}
+
+/* Main Content */
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.uploadCard,
+.resultCard,
+.placeholderCard,
+.errorCard {
+  min-height: 300px;
+}
+
+.sectionTitle {
+  color: #E6ECF5;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+/* Placeholder State */
+.placeholderCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0A1428;
+  border: 2px dashed #1B2948;
+}
+
+.placeholder {
+  text-align: center;
+  padding: 48px 24px;
+  max-width: 500px;
+}
+
+.placeholderIcon {
+  color: #7B4CFF;
+  margin: 0 auto 24px;
+  opacity: 0.6;
+}
+
+.placeholderText {
+  color: #E6ECF5;
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0 0 12px 0;
+}
+
+.placeholderSubtext {
+  color: #6E7C99;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Result Card */
+.resultCard {
+  background: linear-gradient(135deg, rgba(123, 76, 255, 0.05) 0%, rgba(79, 163, 255, 0.05) 100%);
+  border: 1px solid rgba(123, 76, 255, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .configSection {
+    grid-template-columns: 1fr;
+  }
+
+  .placeholder {
+    padding: 32px 16px;
+  }
+
+  .placeholderIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .placeholderText {
+    font-size: 1rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resultCard,
+.errorCard {
+  animation: fadeIn 300ms ease-out;
+}

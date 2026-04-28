@@ -1,0 +1,37 @@
+{
+    "ComponentName":  "com.likenessguard.EdgeConsentEnforcer",
+    "ComponentConfiguration":  {
+                                   "DefaultConfiguration":  {
+                                                                "LG_DB_PATH":  "C:/greengrass/v2/work/edge_cache.db",
+                                                                "LG_SIMILARITY_THRESHOLD":  "0.85",
+                                                                "LG_API_ENDPOINT":  "https://ol35n8kn4f.execute-api.us-east-1.amazonaws.com/v1",
+                                                                "LG_CACHE_MAX_ENTRIES":  "10000",
+                                                                "LG_SYNC_INTERVAL":  "300"
+                                                            }
+                               },
+    "ComponentVersion":  "2.0.0",
+    "ComponentPublisher":  "LikenessGuard",
+    "Manifests":  [
+                      {
+                          "Platform":  {
+                                           "os":  "windows"
+                                       },
+                          "Lifecycle":  {
+                                            "Install":  {
+                                                            "Script":  "pip3 install requests boto3"
+                                                        },
+                                            "Run":  {
+                                                        "Script":  "python3 {artifacts:path}/edge_consent.py"
+                                                    }
+                                        },
+                          "Artifacts":  [
+                                            {
+                                                "Unarchive":  "NONE",
+                                                "URI":  "s3://aws-sam-cli-managed-default-samclisourcebucket-4hluf36xrni1/edge/edge_consent.py"
+                                            }
+                                        ]
+                      }
+                  ],
+    "ComponentDescription":  "LikenessGuard v2 Edge Consent Enforcement",
+    "RecipeFormatVersion":  "2020-01-25"
+}

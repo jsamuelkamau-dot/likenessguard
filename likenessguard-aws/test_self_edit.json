@@ -1,0 +1,1 @@
+{"path":"/v2/consent/check","httpMethod":"POST","body":"{\"image\":\"dGVzdA==\",\"usage_type\":\"SELF_EDIT\",\"requester_id\":\"self-edit-test\"}"}

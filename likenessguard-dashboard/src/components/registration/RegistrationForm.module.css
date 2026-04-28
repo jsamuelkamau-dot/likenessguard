@@ -1,0 +1,249 @@
+﻿.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: var(--color-bg-secondary, #0B1224);
+  border: 1px solid var(--color-border, #1B2948);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #E6ECF5);
+  margin: 0 0 1rem 0;
+}
+
+.sectionDescription {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #A9B4C8);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #E6ECF5);
+  margin-bottom: 0.5rem;
+}
+
+.required {
+  color: var(--color-error, #FF7A45);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: var(--color-text-primary, #E6ECF5);
+  background: var(--color-bg-tertiary, #0E1A2F);
+  border: 1px solid var(--color-border, #1B2948);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent, #7B4CFF);
+  box-shadow: 0 0 0 3px rgba(123, 76, 255, 0.1);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary, #6E7C99);
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary, #6E7C99);
+  margin: 0.5rem 0 0 0;
+}
+
+.policyPreview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.policyItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-bg-tertiary, #0E1A2F);
+  border-radius: 4px;
+}
+
+.policyIcon {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.policyText {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #A9B4C8);
+}
+
+.successMessage {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(98, 216, 78, 0.1);
+  border: 1px solid var(--color-success, #62D84E);
+  border-radius: 8px;
+}
+
+.successIcon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-success, #62D84E);
+}
+
+.successContent {
+  flex: 1;
+}
+
+.successTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #E6ECF5);
+  margin: 0 0 0.5rem 0;
+}
+
+.successText {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #A9B4C8);
+  margin: 0 0 1rem 0;
+}
+
+.likenessId {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-bg-tertiary, #0E1A2F);
+  border-radius: 4px;
+}
+
+.likenessIdLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #A9B4C8);
+}
+
+.likenessIdValue {
+  font-family: "Courier New", monospace;
+  font-size: 0.875rem;
+  color: var(--color-accent, #7B4CFF);
+  padding: 0.25rem 0.5rem;
+  background: rgba(123, 76, 255, 0.1);
+  border-radius: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.loadingOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: rgba(11, 18, 36, 0.95);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.loadingText {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #A9B4C8);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .policyPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
+
+.nextSteps {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(98, 216, 78, 0.2);
+}
+
+.nextStepsTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #E6ECF5);
+  margin: 0 0 0.75rem 0;
+}
+
+.nextStepsText {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #A9B4C8);
+  margin: 0 0 0.75rem 0;
+}
+
+.nextStepsList {
+  margin: 0 0 1rem 1.5rem;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #A9B4C8);
+  line-height: 1.6;
+}
+
+.nextStepsList li {
+  margin-bottom: 0.5rem;
+}
+
+.nextStepsHint {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary, #6E7C99);
+  font-style: italic;
+  margin: 0;
+}

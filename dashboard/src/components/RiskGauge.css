@@ -1,0 +1,23 @@
+﻿.risk-gauge {
+  display: inline-block;
+  position: relative;
+}
+
+.risk-gauge svg {
+  display: block;
+}
+
+.risk-gauge.pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
