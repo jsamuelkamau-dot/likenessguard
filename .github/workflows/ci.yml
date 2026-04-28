@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: cd likenessguard-dashboard && npm ci
+      - run: cd likenessguard-dashboard && npm install --legacy-peer-deps
       - name: Build (skip type check)
         run: cd likenessguard-dashboard && npx vite build
         env:
@@ -59,3 +59,4 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           AWS_ACCESS_KEY_ID: testing
           AWS_SECRET_ACCESS_KEY: testing
+
