@@ -261,6 +261,7 @@ export XAI_API_KEY=your-xai-key
 python grok_integration.py
 ```
 
+
 ---
 
 ## Performance
@@ -284,15 +285,35 @@ python grok_integration.py
 | OpenSearch Serverless | Free Tier |
 | **Total** | **~$4.20/month** |
 
+
 ---
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding standards, and the PR process.
 
+---
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for how to report vulnerabilities.
+
+
+
+---
+
+## :star: Support the Project
+
+If you find LikenessGuard useful, please consider:
+
+- **Starring the repository** :star: to help others discover it
+- **Sharing it** with others who care about responsible AI
+- **Contributing improvements** via pull requests
+- **Reporting issues** to help us improve
+
+Every star and contribution helps make AI safer for everyone.
+
+---
 
 ## License
 
