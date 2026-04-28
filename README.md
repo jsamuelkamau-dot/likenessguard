@@ -6,10 +6,7 @@
 [![AWS AIdeas Finalist](https://img.shields.io/badge/AWS%20AIdeas-Top%2050%20Finalist-orange)](https://builder.aws.com/connect/events/10000aideas)
 [![CI](https://github.com/jsamuelkamau-dot/likenessguard/actions/workflows/ci.yml/badge.svg)](https://github.com/jsamuelkamau-dot/likenessguard/actions)
 
-LikenessGuard stops non-consensual AI image generation **before it happens** -- at the point of generation, not after. When an AI model receives a request to generate or edit an image involving a real person's face, LikenessGuard checks consent in real time. If consent is denied, the AI refuses. If consent is granted, a cryptographically signed Proof-of-Face certificate is issued.
-
----
-
+LikenessGuard stops non-consensual AI image generation **before it happens** — at the point of generation, not after. When an AI model receives a request to generate or edit an image involving a real person's face, LikenessGuard checks consent in real time. If consent is denied, the AI refuses. If consent is granted, a cryptographically signed Proof-of-Face certificate is issued.
 
 ---
 
@@ -17,126 +14,149 @@ LikenessGuard stops non-consensual AI image generation **before it happens** -- 
 
 <!-- Screenshot: Dashboard Home -->
 ![Dashboard Home](screenshots/dashboard-home.png)
-*Caption: LikenessGuard v2 Dashboard Home showing live metrics, recent activity, and multi-agent status.*
+*Caption: LikenessGuard v2 Dashboard Home showing live metrics and recent activity.*
 
 <!-- Screenshot: Consent Check -->
 ![Consent Check](screenshots/consent-check.png)
-*Caption: Real-time consent check with multi-agent reasoning trace, similarity score, and Proof-of-Face result.*
+*Caption: Real-time consent check flow with agent reasoning trace and Proof-of-Face result.*
 
 <!-- Screenshot: Activity Logs -->
 ![Activity Logs](screenshots/activity-logs.png)
-*Caption: Searchable activity logs with filtering by decision type, requester platform, and time range.*
+*Caption: Searchable activity logs with filtering by decision type, time range, and platform.*
 
 <!-- Screenshot: Impact Dashboard -->
 ![Impact Dashboard](screenshots/impact-dashboard.png)
-*Caption: Impact Dashboard showing consent enforcement metrics, cost analysis, and compliance trends.*
+*Caption: Impact Dashboard showing consent enforcement metrics, cost savings, and compliance trends.*
 
 <!-- Screenshot: Federated Registry -->
 ![Federated Registry](screenshots/federated-registry.png)
-*Caption: Federated Registry view with cross-platform peer connections, sync status, and opt-out management.*
+*Caption: Federated Registry view with cross-platform peer connections and sync status.*
 
 <!-- Screenshot: Prompt Playground -->
 ![Prompt Playground](screenshots/prompt-playground.png)
-*Caption: Prompt Playground for testing natural language consent policies with live AI evaluation.*
+*Caption: Prompt Playground for testing natural language consent policies with live evaluation.*
+
+---
 
 ## Features
 
-- **Pre-generation enforcement** -- consent checked before any image is rendered
-- **Bedrock multi-agent system** -- Anomaly Agent (Claude Haiku) + Consent Orchestrator (Nova Pro) + Policy Reasoner (Nova Lite)
-- **Hybrid facial matching** -- Rekognition + Titan Embeddings + OpenSearch Serverless k-NN (<0.5% false negatives)
-- **Cryptographic Proof-of-Face** -- KMS ECDSA P-256 signed C2PA-compatible manifests
-- **Edge enforcement** -- AWS IoT Greengrass v2 with offline default-deny
-- **Federated registry** -- JWT-authenticated cross-platform peer sharing
-- **Claude.ai integration** -- MCP connector for native consent enforcement in Claude
-- **Grok (xAI) integration** -- OpenAI-compatible function calling
-- **Natural language policies** -- write consent rules in plain English
-- **<300ms P95 latency** -- production-ready performance
-- **~$4.20/month** at 100k checks -- serverless cost efficiency
+- **Pre-generation enforcement** — consent checked before any image is rendered
+- **Bedrock multi-agent system** — Anomaly Agent (Claude Haiku) + Consent Orchestrator (Nova Pro) + Policy Reasoner (Nova Lite)
+- **Hybrid facial matching** — Rekognition + Titan Embeddings + OpenSearch Serverless k-NN (<0.5% false negatives)
+- **Cryptographic Proof-of-Face** — KMS ECDSA P-256 signed C2PA-compatible manifests
+- **Edge enforcement** — AWS IoT Greengrass v2 with offline default-deny
+- **Federated registry** — JWT-authenticated cross-platform peer sharing
+- **Claude.ai integration** — MCP connector for native consent enforcement in Claude
+- **Grok (xAI) integration** — OpenAI-compatible function calling
+- **Natural language policies** — write consent rules in plain English
+- **<300ms P95 latency** — production-ready performance
+- **~$4.20/month** at 100k checks — serverless cost efficiency
 
 ---
 
 ## Architecture
 
 ```
-AI Platforms (Claude, Grok, SDKs)
-         |
-         v
-    API Gateway (/v2/consent/*)
-         |
-         v
-  Supervisor Lambda (<300ms P95)
-    /       |        \
-   v        v         v
-Anomaly   Consent    Policy
-Agent     Orchestr.  Reasoner
-(Haiku)   (Nova Pro) (Nova Lite)
-   |         |
-   v         v
-Hybrid Matching     KMS ECDSA
-(Rekognition+Titan  (Proof-of-
- OpenSearch k-NN)    Face Sign)
-         |
-         v
-     DynamoDB
-  (ConsentRegistry
-   AuditLog 7yr)
+┌-----------------------------------------------------------------┐
+|                    AI Platforms & Clients                        |
+|  Claude.ai (MCP)  |  Grok (xAI)  |  Python SDK  |  Node.js SDK |
+|--------------------------┬--------------------------------------┘
+                           | HTTPS
+                           ▼
+                  ┌-----------------┐
+                  |   API Gateway   |
+                  |  /v2/consent/*  |
+                  |--------┬--------┘
+                           |
+                           ▼
+              ┌------------------------┐
+              |   Supervisor Lambda    |  ← Orchestrates 9-step pipeline
+              |   <300ms P95           |
+              |--┬------┬------┬-------┘
+                 |      |      |
+        ┌--------┘  ┌---┘  ┌--┘
+        ▼           ▼      ▼
+  ┌----------┐ ┌--------┐ ┌----------┐
+  | Anomaly  | |Consent | |  Policy  |
+  |  Agent   | |Orchest.| | Reasoner |
+  |  Haiku   | |Nova Pro| |Nova Lite |
+  |----------┘ |--------┘ |----------┘
+        |           |
+        ▼           ▼
+  ┌----------------------┐    ┌-------------┐
+  |  Hybrid Matching     |    |  KMS ECDSA  |
+  |  Rekognition+Titan   |    |  Proof-of-  |
+  |  OpenSearch k-NN     |    |  Face Sign  |
+  |----------------------┘    |-------------┘
+        |
+        ▼
+  ┌----------------------┐
+  |  DynamoDB            |
+  |  ConsentRegistry     |
+  |  AuditLog (7yr)      |
+  |----------------------┘
 ```
 
 ---
 
-
----
-
-## Core Architecture & Key Files
-
-Explore the core logic directly:
-
-| Component | File | What it does |
-|-----------|------|-------------|
-| **Supervisor (Orchestrator)** | [`supervisor/handler.py`](likenessguard-aws/src/lambdas/supervisor/handler.py) | 9-step consent pipeline entry point |
-| **Consent Orchestrator** | [`consent_orchestrator/handler.py`](likenessguard-aws/src/lambdas/consent_orchestrator/handler.py) | Nova Pro policy evaluation + ALLOW/DENY decision |
-| **Anomaly Agent** | [`anomaly_agent/handler.py`](likenessguard-aws/src/lambdas/anomaly_agent/handler.py) | Claude Haiku threat detection (injection, jailbreak, rate abuse) |
-| **Policy Reasoner** | [`policy_reasoner/handler.py`](likenessguard-aws/src/lambdas/policy_reasoner/handler.py) | Nova Lite NL-to-JSON policy conversion |
-| **Proof-of-Face Signing** | [`shared/kms_signing.py`](likenessguard-aws/src/lambdas/shared/kms_signing.py) | KMS ECDSA P-256 C2PA manifest signing |
-| **Facial Embeddings** | [`shared/titan_embeddings.py`](likenessguard-aws/src/lambdas/shared/titan_embeddings.py) | 512-dim Titan vector generation |
-| **Vector Search** | [`shared/opensearch_client.py`](likenessguard-aws/src/lambdas/shared/opensearch_client.py) | OpenSearch k-NN cosine similarity |
-| **Edge Enforcement** | [`edge/edge_consent.py`](likenessguard-aws/edge/edge_consent.py) | Greengrass v2 offline consent with SQLite cache |
-| **MCP Server (Claude)** | [`likenessguard-mcp/server.py`](likenessguard-mcp/server.py) | Claude.ai MCP connector with OAuth stubs |
-| **Federation + Opt-out** | [`federation/handler.py`](likenessguard-aws/src/lambdas/federation/handler.py) | Federated registry, public opt-out endpoint |
-
 ## Quick Start
 
-### Prerequisites
+Get LikenessGuard running in your AWS account in under 10 minutes.
 
-- AWS account with Bedrock access enabled
-- Python 3.13+
-- Node.js 20+
-- AWS CLI v2 + SAM CLI
+### What you'll need
 
-### 1. Clone and configure
+- **AWS account** with Bedrock model access enabled in us-east-1 ([enable models here](https://console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess))
+- **AWS CLI v2** — [install guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- **AWS SAM CLI** — [install guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+- **Python 3.12+** — [download](https://www.python.org/downloads/)
+- **Node.js 20+** — [download](https://nodejs.org/)
+
+### Step 1: Clone and configure
 
 ```bash
 git clone https://github.com/jsamuelkamau-dot/likenessguard.git
 cd likenessguard
 cp .env.example .env
-# Edit .env with your AWS account details
+# Open .env and replace YOUR_AWS_ACCOUNT_ID with your actual account ID
 ```
 
-### 2. Deploy to AWS
+### Step 2: Configure AWS credentials
+
+If you haven't already, set up your AWS credentials:
 
 ```bash
-make build
+aws configure
+# Access Key ID:     <your-key>
+# Secret Access Key: <your-secret>
+# Default region:    us-east-1
+# Output format:     json
+```
+
+### Step 3: Deploy to AWS
+
+```bash
 make deploy
 ```
 
-### 3. Start the dashboard
+This builds all Lambda functions and deploys the full stack (API Gateway, DynamoDB, KMS, S3, OpenSearch, and 9 Lambda functions).
+
+### Step 4: Run post-deploy setup
 
 ```bash
-make start-dashboard
-# Open http://localhost:5173
+make post-deploy
 ```
 
-### 4. Run a consent check
+This creates the OpenSearch vector index and publishes the JWKS public key.
+
+### Step 5: Start the dashboard and MCP server
+
+```bash
+make start
+# Dashboard:  http://localhost:5173
+# MCP server: http://localhost:8080
+```
+
+### Step 6: Test a consent check
 
 ```python
 from likenessguard import LikenessGuardClient
@@ -154,43 +174,45 @@ else:
     print(f"Consent denied: {result.reason_code}")
 ```
 
+For the full deployment guide with troubleshooting, see [DEPLOY.md](DEPLOY.md).
+
 ---
 
 ## Project Structure
 
 ```
 likenessguard/
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ likenessguard-aws/
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
-Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ lambdas/
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ supervisor/          # Orchestrator entry point
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ anomaly_agent/       # Threat detection (Claude Haiku)
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ consent_orchestrator/ # Policy evaluation (Nova Pro)
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ policy_reasoner/     # NL->JSON policy (Nova Lite)
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ proof_verify/        # KMS manifest verification
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ federation/          # Federated registry + opt-out
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ registration/        # Photo upload + fingerprint
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ image_proxy/         # Base64->S3 presigned URL
-Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ shared/              # Titan, OpenSearch, KMS, schemas
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ edge/                        # Greengrass v2 edge component
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ sdk/
-Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ python/                  # Python SDK
-Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ nodejs/                  # Node.js TypeScript SDK
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ infrastructure/              # CloudFormation templates
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ scripts/                     # Deploy, backfill, crosscheck
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ docs/                        # Architecture, guides
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ likenessguard-dashboard/         # React dashboard
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ likenessguard-mcp/               # MCP server (Claude.ai)
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ server.py                    # MCP + OAuth stubs
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ grok_integration.py          # Grok/xAI function calling
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ openai_integration.py        # OpenAI function calling
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .env.example                     # Environment template
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .gitignore
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ LICENSE                          # Apache 2.0
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ Makefile                         # Common commands
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ CONTRIBUTING.md
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ SECURITY.md
-Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ CHANGELOG.md
+|-- likenessguard-aws/
+|   |-- src/
+|   |   |-- lambdas/
+|   |       |-- supervisor/          # Orchestrator entry point
+|   |       |-- anomaly_agent/       # Threat detection (Claude Haiku)
+|   |       |-- consent_orchestrator/ # Policy evaluation (Nova Pro)
+|   |       |-- policy_reasoner/     # NL→JSON policy (Nova Lite)
+|   |       |-- proof_verify/        # KMS manifest verification
+|   |       |-- federation/          # Federated registry + opt-out
+|   |       |-- registration/        # Photo upload + fingerprint
+|   |       |-- image_proxy/         # Base64→S3 presigned URL
+|   |       |-- shared/              # Titan, OpenSearch, KMS, schemas
+|   |-- edge/                        # Greengrass v2 edge component
+|   |-- sdk/
+|   |   |-- python/                  # Python SDK
+|   |   |-- nodejs/                  # Node.js TypeScript SDK
+|   |-- infrastructure/              # CloudFormation templates
+|   |-- scripts/                     # Deploy, backfill, crosscheck
+|   |-- docs/                        # Architecture, guides
+|-- likenessguard-dashboard/         # React dashboard
+|-- likenessguard-mcp/               # MCP server (Claude.ai)
+|   |-- server.py                    # MCP + OAuth stubs
+|   |-- grok_integration.py          # Grok/xAI function calling
+|   |-- openai_integration.py        # OpenAI function calling
+|-- .env.example                     # Environment template
+|-- .gitignore
+|-- LICENSE                          # Apache 2.0
+|-- Makefile                         # Common commands
+|-- CONTRIBUTING.md
+|-- SECURITY.md
+|-- CHANGELOG.md
 ```
 
 ---
@@ -240,20 +262,6 @@ Response:
 
 ---
 
----
-
-## Public Opt-out
-
-Anyone can protect their likeness without creating an account. The public opt-out endpoint applies a DENY-ALL policy immediately:
-
-```bash
-curl -X POST https://YOUR_API_ID.execute-api.us-east-1.amazonaws.com/v1/v2/optout \
-  -H "Content-Type: application/json" \
-  -d '{"image_url": "https://example.com/my-face.jpg", "reason": "I do not consent to AI generation"}'
-```
-
-The dashboard also includes an **Opt-out page** where non-technical users can upload a photo and submit their opt-out request through a simple form -- no API knowledge required.
-
 ## Claude.ai Integration (MCP)
 
 ```bash
@@ -263,16 +271,13 @@ make start-mcp
 # Expose publicly via ngrok
 ngrok http 8080
 
-# Add to Claude.ai: Settings -> Connectors -> Add custom connector
+# Add to Claude.ai: Settings → Connectors → Add custom connector
 # URL: https://YOUR-NGROK-URL.ngrok-free.app/mcp
 ```
 
 Claude will automatically call `check_consent` before generating any image involving a real person.
 
 ---
-
-
-> **Production deployment:** For production use, deploy the MCP server behind a real domain (e.g., on AWS Lambda Function URL, Railway, or Render) instead of ngrok. ngrok URLs are ephemeral and not suitable for persistent integrations. A `Dockerfile` is provided in `likenessguard-mcp/` for containerized deployment.
 
 ## Grok (xAI) Integration
 
@@ -281,7 +286,6 @@ cd likenessguard-mcp
 export XAI_API_KEY=your-xai-key
 python grok_integration.py
 ```
-
 
 ---
 
@@ -306,64 +310,19 @@ python grok_integration.py
 | OpenSearch Serverless | Free Tier |
 | **Total** | **~$4.20/month** |
 
-
 ---
-
----
-
-## Testing
-
-LikenessGuard includes unit tests for core consent logic:
-
-```bash
-# Run all tests
-make test
-
-# Or run directly
-cd likenessguard-aws && python -m pytest tests/ -v
-```
-
-**What the tests cover:**
-
-- **Policy evaluation** -- 12 tests covering default-deny, anomaly blocking, similarity thresholds, face swap denial, self-edit allowance, and decision priority ordering
-- **Manifest signing** -- 4 tests covering manifest structure, hash determinism, tamper detection, and DENY manifest validation
-- **Property-based tests** -- 25 additional tests in `src/tests/` covering Proof-of-Face round-trip, edge offline invariants, audit log completeness, and more
-
-```bash
-# Run property-based tests (requires hypothesis)
-cd likenessguard-aws && python -m pytest src/tests/test_v2_properties.py -v
-```
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding standards, and the PR process.
 
----
-
 ## Security
 
 See [SECURITY.md](SECURITY.md) for how to report vulnerabilities.
 
-
-
----
-
-## :star: Support the Project
-
-If you find LikenessGuard useful, please consider:
-
-- **Starring the repository** :star: to help others discover it
-- **Sharing it** with others who care about responsible AI
-- **Contributing improvements** via pull requests
-- **Reporting issues** to help us improve
-
-Every star and contribution helps make AI safer for everyone.
-
----
-
 ## License
 
-Apache License 2.0 -- see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](LICENSE).
 
 ## Acknowledgements
 
@@ -371,13 +330,8 @@ Built by Samuel Jesse as an AWS AIdeas 2025 competition finalist. Powered by AWS
 
 ---
 
----
+## Repository Topics
 
-## Community & Discussions
+Recommended GitHub topics for this repository:
 
-Have questions, ideas, or want to discuss responsible AI consent enforcement?
-
-- **[GitHub Discussions](https://github.com/jsamuelkamau-dot/likenessguard/discussions)** -- Ask questions, share ideas, get help
-- **[Good First Issues](https://github.com/jsamuelkamau-dot/likenessguard/labels/good%20first%20issue)** -- Great starting points for new contributors
-- **[Bug Reports](https://github.com/jsamuelkamau-dot/likenessguard/issues/new?template=bug_report.md)** -- Found a problem? Let us know
-- **[Feature Requests](https://github.com/jsamuelkamau-dot/likenessguard/issues/new?template=feature_request.md)** -- Suggest improvements
+`aws` · `bedrock` · `responsible-ai` · `deepfake-prevention` · `ai-safety` · `serverless` · `python` · `react` · `mcp`
