@@ -10,6 +10,35 @@ LikenessGuard stops non-consensual AI image generation **before it happens** â€”
 
 ---
 
+
+---
+
+## Screenshots
+
+<!-- Screenshot: Dashboard Home -->
+![Dashboard Home](screenshots/dashboard-home.png)
+*Caption: LikenessGuard v2 Dashboard Home showing live metrics, recent activity, and multi-agent status.*
+
+<!-- Screenshot: Consent Check -->
+![Consent Check](screenshots/consent-check.png)
+*Caption: Real-time consent check with multi-agent reasoning trace, similarity score, and Proof-of-Face result.*
+
+<!-- Screenshot: Activity Logs -->
+![Activity Logs](screenshots/activity-logs.png)
+*Caption: Searchable activity logs with filtering by decision type, requester platform, and time range.*
+
+<!-- Screenshot: Impact Dashboard -->
+![Impact Dashboard](screenshots/impact-dashboard.png)
+*Caption: Impact Dashboard showing consent enforcement metrics, cost analysis, and compliance trends.*
+
+<!-- Screenshot: Federated Registry -->
+![Federated Registry](screenshots/federated-registry.png)
+*Caption: Federated Registry view with cross-platform peer connections, sync status, and opt-out management.*
+
+<!-- Screenshot: Prompt Playground -->
+![Prompt Playground](screenshots/prompt-playground.png)
+*Caption: Prompt Playground for testing natural language consent policies with live AI evaluation.*
+
 ## Features
 
 - **Pre-generation enforcement** â€” consent checked before any image is rendered
@@ -272,3 +301,13 @@ Apache License 2.0 â€” see [LICENSE](LICENSE).
 ## Acknowledgements
 
 Built by Samuel Jesse as an AWS AIdeas 2025 competition finalist. Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway.
+
+---
+
+## Repository Topics
+
+Recommended GitHub topics for discoverability:
+
+`aws` · `bedrock` · `responsible-ai` · `deepfake-prevention` · `ai-safety` · `serverless` · `python` · `react` · `mcp` · `consent` · `biometric-privacy`
+
+---
