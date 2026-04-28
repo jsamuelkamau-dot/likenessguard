@@ -160,37 +160,37 @@ else:
 
 ```
 likenessguard/
-â”œâ”€â”€ likenessguard-aws/
-â”‚   â”œâ”€â”€ src/
-â”‚   â”‚   â””â”€â”€ lambdas/
-â”‚   â”‚       â”œâ”€â”€ supervisor/          # Orchestrator entry point
-â”‚   â”‚       â”œâ”€â”€ anomaly_agent/       # Threat detection (Claude Haiku)
-â”‚   â”‚       â”œâ”€â”€ consent_orchestrator/ # Policy evaluation (Nova Pro)
-â”‚   â”‚       â”œâ”€â”€ policy_reasoner/     # NL->JSON policy (Nova Lite)
-â”‚   â”‚       â”œâ”€â”€ proof_verify/        # KMS manifest verification
-â”‚   â”‚       â”œâ”€â”€ federation/          # Federated registry + opt-out
-â”‚   â”‚       â”œâ”€â”€ registration/        # Photo upload + fingerprint
-â”‚   â”‚       â”œâ”€â”€ image_proxy/         # Base64->S3 presigned URL
-â”‚   â”‚       â””â”€â”€ shared/              # Titan, OpenSearch, KMS, schemas
-â”‚   â”œâ”€â”€ edge/                        # Greengrass v2 edge component
-â”‚   â”œâ”€â”€ sdk/
-â”‚   â”‚   â”œâ”€â”€ python/                  # Python SDK
-â”‚   â”‚   â””â”€â”€ nodejs/                  # Node.js TypeScript SDK
-â”‚   â”œâ”€â”€ infrastructure/              # CloudFormation templates
-â”‚   â”œâ”€â”€ scripts/                     # Deploy, backfill, crosscheck
-â”‚   â””â”€â”€ docs/                        # Architecture, guides
-â”œâ”€â”€ likenessguard-dashboard/         # React dashboard
-â”œâ”€â”€ likenessguard-mcp/               # MCP server (Claude.ai)
-â”‚   â”œâ”€â”€ server.py                    # MCP + OAuth stubs
-â”‚   â”œâ”€â”€ grok_integration.py          # Grok/xAI function calling
-â”‚   â””â”€â”€ openai_integration.py        # OpenAI function calling
-â”œâ”€â”€ .env.example                     # Environment template
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ LICENSE                          # Apache 2.0
-â”œâ”€â”€ Makefile                         # Common commands
-â”œâ”€â”€ CONTRIBUTING.md
-â”œâ”€â”€ SECURITY.md
-â””â”€â”€ CHANGELOG.md
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ likenessguard-aws/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ lambdas/
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ supervisor/          # Orchestrator entry point
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ anomaly_agent/       # Threat detection (Claude Haiku)
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ consent_orchestrator/ # Policy evaluation (Nova Pro)
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ policy_reasoner/     # NL->JSON policy (Nova Lite)
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ proof_verify/        # KMS manifest verification
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ federation/          # Federated registry + opt-out
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ registration/        # Photo upload + fingerprint
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ image_proxy/         # Base64->S3 presigned URL
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ shared/              # Titan, OpenSearch, KMS, schemas
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ edge/                        # Greengrass v2 edge component
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ sdk/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ python/                  # Python SDK
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ nodejs/                  # Node.js TypeScript SDK
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ infrastructure/              # CloudFormation templates
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ scripts/                     # Deploy, backfill, crosscheck
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ docs/                        # Architecture, guides
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ likenessguard-dashboard/         # React dashboard
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ likenessguard-mcp/               # MCP server (Claude.ai)
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ server.py                    # MCP + OAuth stubs
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ grok_integration.py          # Grok/xAI function calling
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ openai_integration.py        # OpenAI function calling
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .env.example                     # Environment template
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .gitignore
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ LICENSE                          # Apache 2.0
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ Makefile                         # Common commands
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ CONTRIBUTING.md
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ SECURITY.md
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ CHANGELOG.md
 ```
 
 ---
@@ -270,6 +270,9 @@ ngrok http 8080
 Claude will automatically call `check_consent` before generating any image involving a real person.
 
 ---
+
+
+> **Production deployment:** For production use, deploy the MCP server behind a real domain (e.g., on AWS Lambda Function URL, Railway, or Render) instead of ngrok. ngrok URLs are ephemeral and not suitable for persistent integrations. A `Dockerfile` is provided in `likenessguard-mcp/` for containerized deployment.
 
 ## Grok (xAI) Integration
 
@@ -378,11 +381,3 @@ Have questions, ideas, or want to discuss responsible AI consent enforcement?
 - **[Good First Issues](https://github.com/jsamuelkamau-dot/likenessguard/labels/good%20first%20issue)** -- Great starting points for new contributors
 - **[Bug Reports](https://github.com/jsamuelkamau-dot/likenessguard/issues/new?template=bug_report.md)** -- Found a problem? Let us know
 - **[Feature Requests](https://github.com/jsamuelkamau-dot/likenessguard/issues/new?template=feature_request.md)** -- Suggest improvements
-
-## Repository Topics
-
-Recommended GitHub topics for discoverability:
-
-`aws` ï¿½ `bedrock` ï¿½ `responsible-ai` ï¿½ `deepfake-prevention` ï¿½ `ai-safety` ï¿½ `serverless` ï¿½ `python` ï¿½ `react` ï¿½ `mcp` ï¿½ `consent` ï¿½ `biometric-privacy`
-
----
