@@ -1,0 +1,484 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: LikenessGuard AWS Prototype - Privacy-first likeness consent enforcement
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        CONSENT_REGISTRY_TABLE: !Ref ConsentRegistryTable
+        AUDIT_LOG_TABLE: !Ref AuditLogTable
+        PHOTO_BUCKET: !Ref PhotoBucket
+        SIMILARITY_THRESHOLD: '0.85'
+        LOG_LEVEL: INFO
+
+Resources:
+  # S3 Bucket for photo storage with encryption
+  PhotoBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'likenessguard-photos-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeletePhotosAfter24Hours
+            Status: Enabled
+            ExpirationInDays: 1
+      VersioningConfiguration:
+        Status: Enabled
+
+  # DynamoDB Table: Consent Registry
+  ConsentRegistryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-ConsentRegistry
+      BillingMode: PAY_PER_REQUEST  # On-demand for Free Tier optimization
+      AttributeDefinitions:
+        - AttributeName: LikenessID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LikenessID
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: LikenessGuard
+        - Key: Environment
+          Value: Prototype
+
+  # DynamoDB Table: Audit Log
+  AuditLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LikenessGuard-AuditLog
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: QueryID
+          AttributeType: S
+        - AttributeName: Timestamp
+          AttributeType: N
+        - AttributeName: LikenessID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: QueryID
+          KeyType: HASH
+        - AttributeName: Timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: LikenessIDIndex
+          KeySchema:
+            - AttributeName: LikenessID
+              KeyType: HASH
+            - AttributeName: Timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      Tags:
+        - Key: Project
+          Value: LikenessGuard
+        - Key: Environment
+          Value: Prototype
+
+  # IAM Role for Lambda Functions
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LikenessGuard-LambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: LikenessGuardLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # S3 Permissions
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub '${PhotoBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt PhotoBucket.Arn
+              # DynamoDB Permissions
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt ConsentRegistryTable.Arn
+                  - !GetAtt AuditLogTable.Arn
+                  - !Sub '${AuditLogTable.Arn}/index/LikenessIDIndex'
+              # Rekognition Permissions
+              - Effect: Allow
+                Action:
+                  - rekognition:DetectFaces
+                  - rekognition:CompareFaces
+                Resource: '*'
+              # CloudWatch Logs
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+              # CloudWatch Metrics
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: '*'
+
+  # Lambda Function: Registration
+  RegistrationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LikenessGuard-Registration
+      CodeUri: ../src/
+      Handler: lambdas.registration.handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        RegisterApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LikenessGuardApi
+            Path: /register
+            Method: POST
+
+  # Lambda Function: Consent Check
+  ConsentCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LikenessGuard-ConsentCheck
+      CodeUri: ../src/
+      Handler: lambdas.consent_check.handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ConsentCheckApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LikenessGuardApi
+            Path: /consent/check
+            Method: POST
+
+  # Lambda Function: Consent Update
+  ConsentUpdateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LikenessGuard-ConsentUpdate
+      CodeUri: ../src/
+      Handler: lambdas.consent_update.handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ConsentUpdateApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LikenessGuardApi
+            Path: /consent/update
+            Method: PUT
+
+
+  # Lambda Function: Consent Get
+  ConsentGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LikenessGuard-ConsentGet
+      CodeUri: ../src/
+      Handler: lambdas.consent_get.handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ConsentGetApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LikenessGuardApi
+            Path: /consent
+            Method: GET
+  # Lambda Function: Consent Revoke
+  ConsentRevokeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LikenessGuard-ConsentRevoke
+      CodeUri: ../src/
+      Handler: lambdas.consent_revoke.handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ConsentRevokeApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LikenessGuardApi
+            Path: /consent/revoke
+            Method: DELETE
+
+  # Lambda Function: Evidence Retrieval
+  EvidenceRetrievalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LikenessGuard-EvidenceRetrieval
+      CodeUri: ../src/
+      Handler: lambdas.evidence_retrieval.handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        EvidenceRetrievalApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LikenessGuardApi
+            Path: /evidence
+            Method: GET
+
+  # Lambda Function: Upload Presigned URL
+  UploadPresignedUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LikenessGuard-UploadPresignedUrl
+      CodeUri: ../src/
+      Handler: lambdas.upload_presigned_url.handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        UploadPresignedUrlApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LikenessGuardApi
+            Path: /upload/presigned-url
+            Method: POST
+
+  # API Gateway
+  LikenessGuardApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: LikenessGuard-API
+      StageName: v1
+      Auth:
+        ApiKeyRequired: false
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: LikenessGuardUsagePlan
+          Quota:
+            Limit: 10000
+            Period: MONTH
+          Throttle:
+            RateLimit: 100
+            BurstLimit: 200
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Api-Key,X-API-Key,Authorization,X-Amz-Date'"
+        AllowOrigin: "'*'"
+        AllowCredentials: false
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseTemplates:
+            application/json: '{"error": {"code": "UNAUTHORIZED", "message": "Missing or invalid API key"}}'
+        THROTTLED:
+          StatusCode: 429
+          ResponseTemplates:
+            application/json: '{"error": {"code": "RATE_LIMIT_EXCEEDED", "message": "Too many requests"}}'
+
+  # CloudWatch Log Groups
+  RegistrationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-Registration
+      RetentionInDays: 90
+
+  ConsentCheckLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-ConsentCheck
+      RetentionInDays: 90
+
+  ConsentUpdateLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-ConsentUpdate
+      RetentionInDays: 90
+
+
+  ConsentGetLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-ConsentGet
+      RetentionInDays: 90
+  ConsentRevokeLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-ConsentRevoke
+      RetentionInDays: 90
+
+  EvidenceRetrievalLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-EvidenceRetrieval
+      RetentionInDays: 90
+
+  UploadPresignedUrlLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/LikenessGuard-UploadPresignedUrl
+      RetentionInDays: 90
+
+  # CloudWatch Alarms
+  # Alarm: High Error Rate (> 5% for 5 minutes)
+  HighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-HighErrorRate
+      AlarmDescription: Alert when error rate exceeds 5% for 5 minutes
+      MetricName: ErrorRate
+      Namespace: LikenessGuard
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # Alarm: Lambda Function Errors (> 10/minute)
+  LambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-LambdaErrors
+      AlarmDescription: Alert when Lambda errors exceed 10 per minute
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # Alarm: Lambda Throttling
+  LambdaThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-LambdaThrottle
+      AlarmDescription: Alert when Lambda functions are throttled
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # Alarm: DynamoDB Throttling
+  DynamoDBThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-DynamoDBThrottle
+      AlarmDescription: Alert when DynamoDB requests are throttled
+      MetricName: UserErrors
+      Namespace: AWS/DynamoDB
+      Dimensions:
+        - Name: TableName
+          Value: !Ref ConsentRegistryTable
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # Alarm: Rekognition Errors
+  RekognitionErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-RekognitionErrors
+      AlarmDescription: Alert when Rekognition errors are detected
+      MetricName: RekognitionError
+      Namespace: LikenessGuard
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # Alarm: Circuit Breaker Open
+  CircuitBreakerOpenAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-CircuitBreakerOpen
+      AlarmDescription: Alert when circuit breaker is open for more than 1 minute
+      MetricName: CircuitBreakerOpen
+      Namespace: LikenessGuard
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # Alarm: High Processing Time
+  HighProcessingTimeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: LikenessGuard-HighProcessingTime
+      AlarmDescription: Alert when processing time exceeds 5 seconds
+      MetricName: ProcessingTimeMs
+      Namespace: LikenessGuard
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 5000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${LikenessGuardApi}.execute-api.${AWS::Region}.amazonaws.com/v1'
+    Export:
+      Name: LikenessGuard-ApiEndpoint
+
+  PhotoBucketName:
+    Description: S3 bucket for photo storage
+    Value: !Ref PhotoBucket
+    Export:
+      Name: LikenessGuard-PhotoBucket
+
+  ConsentRegistryTableName:
+    Description: DynamoDB table for consent registry
+    Value: !Ref ConsentRegistryTable
+    Export:
+      Name: LikenessGuard-ConsentRegistry
+
+  AuditLogTableName:
+    Description: DynamoDB table for audit logs
+    Value: !Ref AuditLogTable
+    Export:
+      Name: LikenessGuard-AuditLog
+

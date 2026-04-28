@@ -1,0 +1,43 @@
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "com.likenessguard.EdgeConsentEnforcer",
+  "ComponentVersion": "2.0.0",
+  "ComponentDescription": "LikenessGuard v2 Edge Consent Enforcement Component. Provides offline-capable consent checking with local fingerprint cache, default-deny when offline, and sync-on-reconnect.",
+  "ComponentPublisher": "LikenessGuard",
+  "ComponentConfiguration": {
+    "DefaultConfiguration": {
+      "LG_API_ENDPOINT": "",
+      "LG_SIMILARITY_THRESHOLD": "0.85",
+      "LG_CACHE_MAX_ENTRIES": "10000",
+      "LG_SYNC_INTERVAL": "300",
+      "LG_DB_PATH": "/var/lib/likenessguard/edge_cache.db"
+    }
+  },
+  "ComponentDependencies": {},
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Lifecycle": {
+        "Install": {
+          "Script": "pip3 install -r {artifacts:path}/requirements.txt"
+        },
+        "Run": {
+          "Script": "python3 {artifacts:path}/edge_consent.py",
+          "RequiresPrivilege": false
+        }
+      },
+      "Artifacts": [
+        {
+          "URI": "s3://likenessguard-deployment-{AWS_ACCOUNT_ID}/edge/edge_consent.py",
+          "Unarchive": "NONE"
+        },
+        {
+          "URI": "s3://likenessguard-deployment-{AWS_ACCOUNT_ID}/edge/requirements.txt",
+          "Unarchive": "NONE"
+        }
+      ]
+    }
+  ]
+}
