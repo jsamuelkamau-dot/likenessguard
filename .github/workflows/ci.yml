@@ -54,7 +54,7 @@ jobs:
           python-version: '3.12'
       - run: pip install pytest
       - name: Run unit tests
-        run: cd likenessguard-aws && python -m pytest tests/ -v --tb=short --no-header --override-ini="addopts="
+        run: cd likenessguard-aws && python -m pytest tests/ -v --tb=short --no-header -o "addopts=" -o "testpaths=tests"
         env:
           AWS_DEFAULT_REGION: us-east-1
           AWS_ACCESS_KEY_ID: testing
