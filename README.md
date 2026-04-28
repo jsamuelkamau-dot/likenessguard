@@ -57,44 +57,44 @@ LikenessGuard stops non-consensual AI image generation **before it happens** —
 ## Architecture
 
 ```
-┌-----------------------------------------------------------------┐
-|                    AI Platforms & Clients                        |
-|  Claude.ai (MCP)  |  Grok (xAI)  |  Python SDK  |  Node.js SDK |
-|--------------------------┬--------------------------------------┘
-                           | HTTPS
+┌─────────────────────────────────────────────────────────────────┐
+│                    AI Platforms & Clients                        │
+│  Claude.ai (MCP)  │  Grok (xAI)  │  Python SDK  │  Node.js SDK │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ HTTPS
                            ▼
-                  ┌-----------------┐
-                  |   API Gateway   |
-                  |  /v2/consent/*  |
-                  |--------┬--------┘
-                           |
+                  ┌─────────────────┐
+                  │   API Gateway   │
+                  │  /v2/consent/*  │
+                  └────────┬────────┘
+                           │
                            ▼
-              ┌------------------------┐
-              |   Supervisor Lambda    |  ← Orchestrates 9-step pipeline
-              |   <300ms P95           |
-              |--┬------┬------┬-------┘
-                 |      |      |
-        ┌--------┘  ┌---┘  ┌--┘
+              ┌────────────────────────┐
+              │   Supervisor Lambda    │  ← Orchestrates 9-step pipeline
+              │   <300ms P95           │
+              └──┬──────┬──────┬───────┘
+                 │      │      │
+        ┌────────┘  ┌───┘  ┌──┘
         ▼           ▼      ▼
-  ┌----------┐ ┌--------┐ ┌----------┐
-  | Anomaly  | |Consent | |  Policy  |
-  |  Agent   | |Orchest.| | Reasoner |
-  |  Haiku   | |Nova Pro| |Nova Lite |
-  |----------┘ |--------┘ |----------┘
-        |           |
+  ┌──────────┐ ┌────────┐ ┌──────────┐
+  │ Anomaly  │ │Consent │ │  Policy  │
+  │  Agent   │ │Orchest.│ │ Reasoner │
+  │  Haiku   │ │Nova Pro│ │Nova Lite │
+  └──────────┘ └────────┘ └──────────┘
+        │           │
         ▼           ▼
-  ┌----------------------┐    ┌-------------┐
-  |  Hybrid Matching     |    |  KMS ECDSA  |
-  |  Rekognition+Titan   |    |  Proof-of-  |
-  |  OpenSearch k-NN     |    |  Face Sign  |
-  |----------------------┘    |-------------┘
-        |
+  ┌──────────────────────┐    ┌─────────────┐
+  │  Hybrid Matching     │    │  KMS ECDSA  │
+  │  Rekognition+Titan   │    │  Proof-of-  │
+  │  OpenSearch k-NN     │    │  Face Sign  │
+  └──────────────────────┘    └─────────────┘
+        │
         ▼
-  ┌----------------------┐
-  |  DynamoDB            |
-  |  ConsentRegistry     |
-  |  AuditLog (7yr)      |
-  |----------------------┘
+  ┌──────────────────────┐
+  │  DynamoDB            │
+  │  ConsentRegistry     │
+  │  AuditLog (7yr)      │
+  └──────────────────────┘
 ```
 
 ---
@@ -182,37 +182,37 @@ For the full deployment guide with troubleshooting, see [DEPLOY.md](DEPLOY.md).
 
 ```
 likenessguard/
-|-- likenessguard-aws/
-|   |-- src/
-|   |   |-- lambdas/
-|   |       |-- supervisor/          # Orchestrator entry point
-|   |       |-- anomaly_agent/       # Threat detection (Claude Haiku)
-|   |       |-- consent_orchestrator/ # Policy evaluation (Nova Pro)
-|   |       |-- policy_reasoner/     # NL→JSON policy (Nova Lite)
-|   |       |-- proof_verify/        # KMS manifest verification
-|   |       |-- federation/          # Federated registry + opt-out
-|   |       |-- registration/        # Photo upload + fingerprint
-|   |       |-- image_proxy/         # Base64→S3 presigned URL
-|   |       |-- shared/              # Titan, OpenSearch, KMS, schemas
-|   |-- edge/                        # Greengrass v2 edge component
-|   |-- sdk/
-|   |   |-- python/                  # Python SDK
-|   |   |-- nodejs/                  # Node.js TypeScript SDK
-|   |-- infrastructure/              # CloudFormation templates
-|   |-- scripts/                     # Deploy, backfill, crosscheck
-|   |-- docs/                        # Architecture, guides
-|-- likenessguard-dashboard/         # React dashboard
-|-- likenessguard-mcp/               # MCP server (Claude.ai)
-|   |-- server.py                    # MCP + OAuth stubs
-|   |-- grok_integration.py          # Grok/xAI function calling
-|   |-- openai_integration.py        # OpenAI function calling
-|-- .env.example                     # Environment template
-|-- .gitignore
-|-- LICENSE                          # Apache 2.0
-|-- Makefile                         # Common commands
-|-- CONTRIBUTING.md
-|-- SECURITY.md
-|-- CHANGELOG.md
+├── likenessguard-aws/
+│   ├── src/
+│   │   └── lambdas/
+│   │       ├── supervisor/          # Orchestrator entry point
+│   │       ├── anomaly_agent/       # Threat detection (Claude Haiku)
+│   │       ├── consent_orchestrator/ # Policy evaluation (Nova Pro)
+│   │       ├── policy_reasoner/     # NL→JSON policy (Nova Lite)
+│   │       ├── proof_verify/        # KMS manifest verification
+│   │       ├── federation/          # Federated registry + opt-out
+│   │       ├── registration/        # Photo upload + fingerprint
+│   │       ├── image_proxy/         # Base64→S3 presigned URL
+│   │       └── shared/              # Titan, OpenSearch, KMS, schemas
+│   ├── edge/                        # Greengrass v2 edge component
+│   ├── sdk/
+│   │   ├── python/                  # Python SDK
+│   │   └── nodejs/                  # Node.js TypeScript SDK
+│   ├── infrastructure/              # CloudFormation templates
+│   ├── scripts/                     # Deploy, backfill, crosscheck
+│   └── docs/                        # Architecture, guides
+├── likenessguard-dashboard/         # React dashboard
+├── likenessguard-mcp/               # MCP server (Claude.ai)
+│   ├── server.py                    # MCP + OAuth stubs
+│   ├── grok_integration.py          # Grok/xAI function calling
+│   └── openai_integration.py        # OpenAI function calling
+├── .env.example                     # Environment template
+├── .gitignore
+├── LICENSE                          # Apache 2.0
+├── Makefile                         # Common commands
+├── CONTRIBUTING.md
+├── SECURITY.md
+└── CHANGELOG.md
 ```
 
 ---
@@ -277,6 +277,11 @@ ngrok http 8080
 
 Claude will automatically call `check_consent` before generating any image involving a real person.
 
+> **Production deployment:** ngrok is for development/testing only. For production, deploy the MCP server to a stable HTTPS endpoint:
+> - **AWS Lambda Function URL** -- serverless, no infrastructure to manage
+> - **Railway / Render** -- one-click deploy from the included `Dockerfile`
+> - **Any HTTPS server** -- run `python server.py` behind nginx/caddy with a real domain and TLS certificate
+
 ---
 
 ## Grok (xAI) Integration
@@ -327,11 +332,3 @@ Apache License 2.0 — see [LICENSE](LICENSE).
 ## Acknowledgements
 
 Built by Samuel Jesse as an AWS AIdeas 2025 competition finalist. Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway.
-
----
-
-## Repository Topics
-
-Recommended GitHub topics for this repository:
-
-`aws` · `bedrock` · `responsible-ai` · `deepfake-prevention` · `ai-safety` · `serverless` · `python` · `react` · `mcp`
