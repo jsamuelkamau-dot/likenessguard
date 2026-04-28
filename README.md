@@ -6,7 +6,7 @@
 [![AWS AIdeas Finalist](https://img.shields.io/badge/AWS%20AIdeas-Top%2050%20Finalist-orange)](https://builder.aws.com/connect/events/10000aideas)
 [![CI](https://github.com/jsamuelkamau-dot/likenessguard/actions/workflows/ci.yml/badge.svg)](https://github.com/jsamuelkamau-dot/likenessguard/actions)
 
-LikenessGuard stops non-consensual AI image generation **before it happens** — at the point of generation, not after. When an AI model receives a request to generate or edit an image involving a real person's face, LikenessGuard checks consent in real time. If consent is denied, the AI refuses. If consent is granted, a cryptographically signed Proof-of-Face certificate is issued.
+LikenessGuard stops non-consensual AI image generation **before it happens** -- at the point of generation, not after. When an AI model receives a request to generate or edit an image involving a real person's face, LikenessGuard checks consent in real time. If consent is denied, the AI refuses. If consent is granted, a cryptographically signed Proof-of-Face certificate is issued.
 
 ---
 
@@ -41,61 +41,45 @@ LikenessGuard stops non-consensual AI image generation **before it happens** —
 
 ## Features
 
-- **Pre-generation enforcement** — consent checked before any image is rendered
-- **Bedrock multi-agent system** — Anomaly Agent (Claude Haiku) + Consent Orchestrator (Nova Pro) + Policy Reasoner (Nova Lite)
-- **Hybrid facial matching** — Rekognition + Titan Embeddings + OpenSearch Serverless k-NN (<0.5% false negatives)
-- **Cryptographic Proof-of-Face** — KMS ECDSA P-256 signed C2PA-compatible manifests
-- **Edge enforcement** — AWS IoT Greengrass v2 with offline default-deny
-- **Federated registry** — JWT-authenticated cross-platform peer sharing
-- **Claude.ai integration** — MCP connector for native consent enforcement in Claude
-- **Grok (xAI) integration** — OpenAI-compatible function calling
-- **Natural language policies** — write consent rules in plain English
-- **<300ms P95 latency** — production-ready performance
-- **~$4.20/month** at 100k checks — serverless cost efficiency
+- **Pre-generation enforcement** -- consent checked before any image is rendered
+- **Bedrock multi-agent system** -- Anomaly Agent (Claude Haiku) + Consent Orchestrator (Nova Pro) + Policy Reasoner (Nova Lite)
+- **Hybrid facial matching** -- Rekognition + Titan Embeddings + OpenSearch Serverless k-NN (<0.5% false negatives)
+- **Cryptographic Proof-of-Face** -- KMS ECDSA P-256 signed C2PA-compatible manifests
+- **Edge enforcement** -- AWS IoT Greengrass v2 with offline default-deny
+- **Federated registry** -- JWT-authenticated cross-platform peer sharing
+- **Claude.ai integration** -- MCP connector for native consent enforcement in Claude
+- **Grok (xAI) integration** -- OpenAI-compatible function calling
+- **Natural language policies** -- write consent rules in plain English
+- **<300ms P95 latency** -- production-ready performance
+- **~$4.20/month** at 100k checks -- serverless cost efficiency
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    AI Platforms & Clients                        │
-│  Claude.ai (MCP)  │  Grok (xAI)  │  Python SDK  │  Node.js SDK │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │ HTTPS
-                           ▼
-                  ┌─────────────────┐
-                  │   API Gateway   │
-                  │  /v2/consent/*  │
-                  └────────┬────────┘
-                           │
-                           ▼
-              ┌────────────────────────┐
-              │   Supervisor Lambda    │  ← Orchestrates 9-step pipeline
-              │   <300ms P95           │
-              └──┬──────┬──────┬───────┘
-                 │      │      │
-        ┌────────┘  ┌───┘  ┌──┘
-        ▼           ▼      ▼
-  ┌──────────┐ ┌────────┐ ┌──────────┐
-  │ Anomaly  │ │Consent │ │  Policy  │
-  │  Agent   │ │Orchest.│ │ Reasoner │
-  │  Haiku   │ │Nova Pro│ │Nova Lite │
-  └──────────┘ └────────┘ └──────────┘
-        │           │
-        ▼           ▼
-  ┌──────────────────────┐    ┌─────────────┐
-  │  Hybrid Matching     │    │  KMS ECDSA  │
-  │  Rekognition+Titan   │    │  Proof-of-  │
-  │  OpenSearch k-NN     │    │  Face Sign  │
-  └──────────────────────┘    └─────────────┘
-        │
-        ▼
-  ┌──────────────────────┐
-  │  DynamoDB            │
-  │  ConsentRegistry     │
-  │  AuditLog (7yr)      │
-  └──────────────────────┘
+AI Platforms (Claude, Grok, SDKs)
+         |
+         v
+    API Gateway (/v2/consent/*)
+         |
+         v
+  Supervisor Lambda (<300ms P95)
+    /       |        \
+   v        v         v
+Anomaly   Consent    Policy
+Agent     Orchestr.  Reasoner
+(Haiku)   (Nova Pro) (Nova Lite)
+   |         |
+   v         v
+Hybrid Matching     KMS ECDSA
+(Rekognition+Titan  (Proof-of-
+ OpenSearch k-NN)    Face Sign)
+         |
+         v
+     DynamoDB
+  (ConsentRegistry
+   AuditLog 7yr)
 ```
 
 ---
@@ -162,11 +146,11 @@ likenessguard/
 │   │       ├── supervisor/          # Orchestrator entry point
 │   │       ├── anomaly_agent/       # Threat detection (Claude Haiku)
 │   │       ├── consent_orchestrator/ # Policy evaluation (Nova Pro)
-│   │       ├── policy_reasoner/     # NL→JSON policy (Nova Lite)
+│   │       ├── policy_reasoner/     # NL->JSON policy (Nova Lite)
 │   │       ├── proof_verify/        # KMS manifest verification
 │   │       ├── federation/          # Federated registry + opt-out
 │   │       ├── registration/        # Photo upload + fingerprint
-│   │       ├── image_proxy/         # Base64→S3 presigned URL
+│   │       ├── image_proxy/         # Base64->S3 presigned URL
 │   │       └── shared/              # Titan, OpenSearch, KMS, schemas
 │   ├── edge/                        # Greengrass v2 edge component
 │   ├── sdk/
@@ -245,7 +229,7 @@ make start-mcp
 # Expose publicly via ngrok
 ngrok http 8080
 
-# Add to Claude.ai: Settings → Connectors → Add custom connector
+# Add to Claude.ai: Settings -> Connectors -> Add custom connector
 # URL: https://YOUR-NGROK-URL.ngrok-free.app/mcp
 ```
 
@@ -317,7 +301,7 @@ Every star and contribution helps make AI safer for everyone.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+Apache License 2.0 -- see [LICENSE](LICENSE).
 
 ## Acknowledgements
 
@@ -329,6 +313,6 @@ Built by Samuel Jesse as an AWS AIdeas 2025 competition finalist. Powered by AWS
 
 Recommended GitHub topics for discoverability:
 
-`aws` � `bedrock` � `responsible-ai` � `deepfake-prevention` � `ai-safety` � `serverless` � `python` � `react` � `mcp` � `consent` � `biometric-privacy`
+`aws` � `bedrock` � `responsible-ai` � `deepfake-prevention` � `ai-safety` � `serverless` � `python` � `react` � `mcp` � `consent` � `biometric-privacy`
 
 ---
