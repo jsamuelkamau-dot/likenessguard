@@ -1,0 +1,139 @@
+/* Button base styles */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  min-height: 44px;
+  min-width: 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Primary variant - action green */
+.button.primary {
+  background-color: var(--action-primary);
+  color: var(--bg-primary);
+}
+
+.button.primary:hover:not(.disabled) {
+  background-color: var(--action-secondary);
+  box-shadow: 0 0 20px rgba(118, 255, 99, 0.4);
+}
+
+.button.primary:active:not(.disabled) {
+  background-color: var(--action-tertiary);
+  transform: translateY(1px);
+}
+
+/* Secondary variant - accent purple */
+.button.secondary {
+  background-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.button.secondary:hover:not(.disabled) {
+  background-color: var(--accent-secondary);
+  box-shadow: 0 0 20px rgba(138, 99, 255, 0.4);
+}
+
+.button.secondary:active:not(.disabled) {
+  background-color: var(--accent-tertiary);
+  transform: translateY(1px);
+}
+
+/* Danger variant - error red/orange */
+.button.danger {
+  background-color: var(--status-error);
+  color: var(--text-primary);
+}
+
+.button.danger:hover:not(.disabled) {
+  background-color: #FF8A5C;
+  box-shadow: 0 0 20px rgba(255, 122, 69, 0.4);
+}
+
+.button.danger:active:not(.disabled) {
+  background-color: #FF6A3D;
+  transform: translateY(1px);
+}
+
+/* Disabled state */
+.button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Loading spinner */
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.spinnerSvg {
+  width: 100%;
+  height: 100%;
+  animation: spin 1s linear infinite;
+}
+
+.spinnerCircle {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-dasharray: 50;
+  stroke-dashoffset: 25;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+/* Loading text state */
+.loadingText {
+  opacity: 0.7;
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 50;
+  }
+  50% {
+    stroke-dashoffset: 12.5;
+  }
+  100% {
+    stroke-dashoffset: 50;
+  }
+}
+
+/* Focus state for accessibility */
+.button:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+}

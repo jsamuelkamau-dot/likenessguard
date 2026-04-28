@@ -1,0 +1,104 @@
+/* Container for spinner and optional text */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+/* Spinner base styles */
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Size variants */
+.spinner.small {
+  width: 24px;
+  height: 24px;
+}
+
+.spinner.medium {
+  width: 48px;
+  height: 48px;
+}
+
+.spinner.large {
+  width: 72px;
+  height: 72px;
+}
+
+/* SVG spinner */
+.spinnerSvg {
+  width: 100%;
+  height: 100%;
+  animation: spin 1.2s linear infinite;
+}
+
+/* Spinner circle with glow effect */
+.spinnerCircle {
+  stroke: var(--accent-primary);
+  stroke-linecap: round;
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  animation: dash 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px var(--glow-purple));
+}
+
+/* Optional text label */
+.text {
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Screen reader only text */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Animations */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .text {
+    font-size: var(--font-size-sm);
+  }
+}
