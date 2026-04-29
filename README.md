@@ -10,7 +10,7 @@ LikenessGuard stops non-consensual AI image generation **before it happens** —
 
 ---
 
-## Screenshots
+## Demo Screenshots
 
 * LikenessGuard v2 Dashboard Home showing live metrics and recent activity.
 <!-- Screenshot: Dashboard Home -->
