@@ -12,29 +12,33 @@ LikenessGuard stops non-consensual AI image generation **before it happens** —
 
 ## Screenshots
 
+* LikenessGuard v2 Dashboard Home showing live metrics and recent activity.
 <!-- Screenshot: Dashboard Home -->
-![Dashboard Home](screenshots/dashboard-home.png)
-*Caption: LikenessGuard v2 Dashboard Home showing live metrics and recent activity.*
+<img width="959" height="494" alt="dashbord" src="https://github.com/user-attachments/assets/0591a65a-4dbc-458f-847b-f90be7476067" />
 
+---
+* Real-time consent check flow with agent reasoning trace and Proof-of-Face result.
 <!-- Screenshot: Consent Check -->
-![Consent Check](screenshots/consent-check.png)
-*Caption: Real-time consent check flow with agent reasoning trace and Proof-of-Face result.*
+<img width="958" height="491" alt="consent check" src="https://github.com/user-attachments/assets/d5b46d47-8f90-41aa-bb92-fb1a00b40f95" />
 
+---
+* Searchable activity logs with filtering by decision type, time range, and platform.
 <!-- Screenshot: Activity Logs -->
-![Activity Logs](screenshots/activity-logs.png)
-*Caption: Searchable activity logs with filtering by decision type, time range, and platform.*
+<img width="1919" height="904" alt="cloude and grpk logs" src="https://github.com/user-attachments/assets/651f5e93-8668-475a-ac6c-70051ab18c60" />
 
+---
+* Impact Dashboard showing consent enforcement metrics, cost savings, and compliance trends.
 <!-- Screenshot: Impact Dashboard -->
-![Impact Dashboard](screenshots/impact-dashboard.png)
-*Caption: Impact Dashboard showing consent enforcement metrics, cost savings, and compliance trends.*
+<img width="959" height="453" alt="impact dashboard" src="https://github.com/user-attachments/assets/cd9f5d07-dacd-425b-86e7-86832b850174" />
 
+---
+
+* Federated Registry view with cross-platform peer connections and sync status.
 <!-- Screenshot: Federated Registry -->
-![Federated Registry](screenshots/federated-registry.png)
-*Caption: Federated Registry view with cross-platform peer connections and sync status.*
+<img width="955" height="481" alt="federated registry" src="https://github.com/user-attachments/assets/3b1f6b9e-2130-4345-8863-6793d99354d2" />
 
-<!-- Screenshot: Prompt Playground -->
-![Prompt Playground](screenshots/prompt-playground.png)
-*Caption: Prompt Playground for testing natural language consent policies with live evaluation.*
+
+
 
 ---
 
