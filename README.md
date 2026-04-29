@@ -1,6 +1,6 @@
 # LikenessGuard
 
-**An open-source framework for pre-generation consent enforcement in AI image generation.**
+**An open-source framework for enforcing consent before AI image generation.**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/jsamuelkamau-dot/likenessguard/actions/workflows/ci.yml/badge.svg)](https://github.com/jsamuelkamau-dot/likenessguard/actions)
