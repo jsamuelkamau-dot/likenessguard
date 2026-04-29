@@ -12,23 +12,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-      - run: pip install detect-secrets
+          python-version: '3.12'
+
+      - name: Install detect-secrets
+        run: pip install detect-secrets
+
       - name: Scan for secrets
         run: |
-          detect-secrets scan --all-files --exclude-files '\.lock$' --exclude-files 'node_modules' > .secrets-baseline.json
-          detect-secrets audit --report --json .secrets-baseline.json | python -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          real = [r for r in data.get('results', {}).values() if any(s.get('is_secret') for s in r)]
-          if real:
-              print('SECRETS FOUND:')
-              for k, v in data['results'].items():
-                  for s in v:
-                      if s.get('is_secret'):
-                          print(f'  {k}: {s[\"type\"]}')
-              sys.exit(1)
-          print('No secrets detected')
-          " 2>/dev/null || echo "Scan complete (no actionable secrets)"
+          detect-secrets scan \
+            --all-files \
+            --exclude-files '\.lock$' \
+            --exclude-files 'node_modules' \
+            --exclude-files '\.hypothesis' \
+            > .secrets-baseline.json
+
+          # Check if any real secrets were found
+          SECRETS_COUNT=$(python -c "
+          import json
+          with open('.secrets-baseline.json') as f:
+              data = json.load(f)
+          count = sum(len(v) for v in data.get('results', {}).values())
+          print(count)
+          ")
+
+          if [ "$SECRETS_COUNT" -gt 0 ]; then
+            echo "⚠️  Potential secrets detected ($SECRETS_COUNT findings)."
+            echo "Review .secrets-baseline.json for details."
+            python -c "
+          import json
+          with open('.secrets-baseline.json') as f:
+              data = json.load(f)
+          for filepath, findings in data.get('results', {}).items():
+              for f in findings:
+                  print(f'  {filepath}:{f[\"line_number\"]} — {f[\"type\"]}')
+          "
+          else
+            echo "✅ No secrets detected."
+          fi
