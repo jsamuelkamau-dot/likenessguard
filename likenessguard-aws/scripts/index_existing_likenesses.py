@@ -8,7 +8,7 @@ from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
 REGION = 'us-east-1'
 TABLE = 'LikenessGuard-ConsentRegistry'
-OS_HOST = 'nxd3bg25jojtumlkpbdk.us-east-1.aoss.amazonaws.com'
+OS_HOST = 'YOUR_COLLECTION_ID.us-east-1.aoss.amazonaws.com'
 INDEX = 'likenessguard-vectors'
 
 

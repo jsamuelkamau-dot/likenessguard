@@ -11,8 +11,8 @@ Review every item before pushing to GitHub.
 - [ ] Verify `.kiro/steering/likenessguard-v2.md` is NOT committed (contains account IDs/ARNs)
 - [ ] Verify no AWS account IDs (YOUR_ACCOUNT_ID) in any committed file
 - [ ] Verify no API Gateway IDs (YOUR_API_ID) in any committed file
-- [ ] Verify no KMS key IDs (d47b74ed-...) in any committed file
-- [ ] Verify no OpenSearch endpoints (nxd3bg25...) in any committed file
+- [ ] Verify no KMS key IDs (YOUR_KEY_ID) in any committed file
+- [ ] Verify no OpenSearch endpoints (YOUR_COLLECTION_ID) in any committed file
 - [ ] Verify ngrok auth tokens are NOT committed
 - [ ] Verify xAI/OpenAI API keys are NOT committed
 - [ ] All Lambda env vars use placeholders in CloudFormation templates

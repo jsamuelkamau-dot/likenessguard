@@ -2,7 +2,7 @@
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 import boto3
 
-host = 'nxd3bg25jojtumlkpbdk.us-east-1.aoss.amazonaws.com'
+host = 'YOUR_COLLECTION_ID.us-east-1.aoss.amazonaws.com'
 credentials = boto3.Session().get_credentials()
 auth = AWSV4SignerAuth(credentials, 'us-east-1', 'aoss')
 client = OpenSearch(

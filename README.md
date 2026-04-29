@@ -1,9 +1,8 @@
-# LikenessGuard v2
+# LikenessGuard
 
-**The world's first Bedrock Multi-Agent, Edge-Capable, Cryptographically Verifiable Pre-Generation Consent Enforcement Platform.**
+**An open-source primitive for pre-generation consent enforcement in AI image generation.**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![AWS AIdeas Finalist](https://img.shields.io/badge/AWS%20AIdeas-Top%2050%20Finalist-orange)](https://builder.aws.com/connect/events/10000aideas)
 [![CI](https://github.com/jsamuelkamau-dot/likenessguard/actions/workflows/ci.yml/badge.svg)](https://github.com/jsamuelkamau-dot/likenessguard/actions)
 
 LikenessGuard stops non-consensual AI image generation **before it happens** — at the point of generation, not after. When an AI model receives a request to generate or edit an image involving a real person's face, LikenessGuard checks consent in real time. If consent is denied, the AI refuses. If consent is granted, a cryptographically signed Proof-of-Face certificate is issued.
@@ -40,7 +39,7 @@ LikenessGuard stops non-consensual AI image generation **before it happens** —
 
 ## 🎥 Demo Video: LikenessGuard in Action
 
-See how LikenessGuard enforces consent before any AI image generation or editing involving a real person’s likeness.
+See how LikenessGuard enforces consent before any AI image generation or editing involving a real person's likeness.
 
 
 
@@ -63,6 +62,21 @@ https://github.com/user-attachments/assets/f9c596e5-4b2f-492e-b3c6-be725ac8f4ee
 - **Natural language policies** — write consent rules in plain English
 - **<300ms P95 latency** — production-ready performance
 - **~$4.20/month** at 100k checks — serverless cost efficiency
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, coding standards, PR process, DCO |
+| [SECURITY.md](SECURITY.md) | Vulnerability reporting, disclosure policy |
+| [ROADMAP.md](ROADMAP.md) | Project direction, priorities, non-goals |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+| [Architecture](likenessguard-aws/docs/architecture-v2.md) | System architecture and design |
+| [Threat Model](docs/threat-model.md) | Security analysis, trust boundaries, invariants |
+| [RFCs](docs/rfcs/) | Architecture decision records |
+| [API Reference](#api-reference) | Endpoint documentation |
 
 ---
 
@@ -108,6 +122,11 @@ https://github.com/user-attachments/assets/f9c596e5-4b2f-492e-b3c6-be725ac8f4ee
   │  AuditLog (7yr)      │
   └──────────────────────┘
 ```
+
+For the rationale behind key architecture decisions, see the [RFCs](docs/rfcs/):
+- [RFC-001: Supervisor Orchestration Pattern](docs/rfcs/001-supervisor-orchestration-pattern.md) — why we use a Supervisor Lambda instead of Bedrock Agents or Step Functions
+- [RFC-002: Hybrid Facial Matching](docs/rfcs/002-hybrid-facial-matching.md) — three-layer matching pipeline design
+- [RFC-003: Proof-of-Face Signing](docs/rfcs/003-proof-of-face-signing.md) — KMS ECDSA P-256 signing for C2PA-compatible manifests
 
 ---
 
@@ -188,6 +207,16 @@ else:
 
 For the full deployment guide with troubleshooting, see [DEPLOY.md](DEPLOY.md).
 
+### Contributing Without AWS
+
+You don't need an AWS account to contribute. Most work — tests, docs, dashboard, SDKs — runs locally with mocked services:
+
+```bash
+make dev-mock    # Run property-based tests + unit tests (no AWS needed)
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full list of what needs AWS and what doesn't.
+
 ---
 
 ## Project Structure
@@ -218,12 +247,16 @@ likenessguard/
 │   ├── server.py                    # MCP + OAuth stubs
 │   ├── grok_integration.py          # Grok/xAI function calling
 │   └── openai_integration.py        # OpenAI function calling
+├── docs/
+│   ├── threat-model.md              # Security threat model
+│   └── rfcs/                        # Architecture decision records
 ├── .env.example                     # Environment template
 ├── .gitignore
 ├── LICENSE                          # Apache 2.0
 ├── Makefile                         # Common commands
 ├── CONTRIBUTING.md
 ├── SECURITY.md
+├── ROADMAP.md
 └── CHANGELOG.md
 ```
 
@@ -341,6 +374,8 @@ See [SECURITY.md](SECURITY.md) for how to report vulnerabilities.
 
 Apache License 2.0 — see [LICENSE](LICENSE).
 
+Contributions are accepted under the Apache 2.0 license via [Developer Certificate of Origin](https://developercertificate.org/) (DCO) sign-off. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
 ## Acknowledgements
 
-Built by Samuel Jesse as an AWS AIdeas 2025 competition finalist. Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway.
+Built by Samuel Jesse. Recognized as an [AWS AIdeas 2025 Top 50 Finalist](https://builder.aws.com/connect/events/10000aideas). Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway.

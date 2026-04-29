@@ -62,7 +62,7 @@ export const FederatedRegistry: React.FC = () => {
       await new Promise(r => setTimeout(r, 400 + Math.random() * 300));
       setSyncSteps(prev => prev.map((s, idx) => idx === i ? { ...s, status: "running" } : s));
       await new Promise(r => setTimeout(r, 500 + Math.random() * 400));
-      const details = ["2 peers found","JWT signed with KMS key d47b74ed","19 vectors in manifest","847 vectors received","Merged 1,159 total vectors","All peers synchronized"];
+      const details = ["2 peers found","JWT signed with KMS key YOUR_KMS_KEY_ID","19 vectors in manifest","847 vectors received","Merged 1,159 total vectors","All peers synchronized"];
       setSyncSteps(prev => prev.map((s, idx) => idx === i ? { ...s, status: "done", detail: details[i] } : s));
     }
     setSyncRunning(false);

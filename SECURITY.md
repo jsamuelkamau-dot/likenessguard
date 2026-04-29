@@ -23,26 +23,44 @@ If you discover a security vulnerability in LikenessGuard, please report it resp
 - Potential impact
 - Suggested fix (if any)
 
-### Response timeline
+### Disclosure Policy
 
-- **Acknowledgement**: Within 48 hours
-- **Initial assessment**: Within 5 business days
-- **Fix timeline**: Depends on severity — critical issues within 7 days
+We follow a **90-day coordinated disclosure** policy:
+
+- You report the vulnerability privately
+- We acknowledge, assess, and fix within the timelines below
+- After 90 days (or once a fix is released, whichever comes first), you may publicly disclose
+- We will coordinate with you on disclosure timing
+- We will credit you in the release notes (unless you prefer to remain anonymous)
+
+### Response Timeline
+
+| Stage | Timeline |
+|-------|----------|
+| **Acknowledgement** | Within 48 hours |
+| **Initial assessment** | Within 5 business days |
+| **Critical severity fix** | Within 7 days |
+| **High severity fix** | Within 14 days |
+| **Medium/Low severity fix** | Within 30 days |
 
 ### Scope
 
-In scope:
-- AWS Lambda functions
-- API Gateway endpoints
-- KMS signing/verification
-- Authentication and authorization
-- Data exposure in DynamoDB or S3
+**In scope:**
+- AWS Lambda functions (all 11 handlers)
+- API Gateway endpoints and routing
+- KMS signing and verification logic
+- Authentication and authorization (JWT, API keys)
+- Data exposure in DynamoDB, OpenSearch, or S3
 - MCP server security
+- Edge component (Greengrass v2) security
+- Federation protocol security
+- SDK security (Python and Node.js)
 
-Out of scope:
-- Third-party AWS services (report to AWS)
+**Out of scope:**
+- Third-party AWS services (report to [AWS Security](https://aws.amazon.com/security/vulnerability-reporting/))
 - Social engineering attacks
 - Physical security
+- Denial of service via rate limiting (this is expected behavior)
 
 ## Security Design Principles
 
@@ -55,6 +73,16 @@ LikenessGuard is built with these security defaults:
 - **Immutable audit log**: DynamoDB audit entries include tamper-detection hashes
 - **No raw biometric storage**: Only 512-dim vectors stored, never raw photos (deleted after 24h)
 
-## Responsible Disclosure
+For the full threat model, security invariants, and attack surface analysis, see [docs/threat-model.md](docs/threat-model.md).
 
-We follow coordinated disclosure. We will credit researchers who report valid vulnerabilities in our release notes unless they prefer to remain anonymous.
+## PGP Key
+
+A PGP key for encrypted vulnerability reports will be published here in a future release. In the meantime, use GitHub Private Security Advisories for sensitive reports.
+
+## Security Hall of Fame
+
+We recognize researchers who responsibly disclose valid security vulnerabilities. Thank you for helping keep LikenessGuard secure.
+
+| Researcher | Vulnerability | Date | Severity |
+|------------|--------------|------|----------|
+| — | *Be the first!* | — | — |

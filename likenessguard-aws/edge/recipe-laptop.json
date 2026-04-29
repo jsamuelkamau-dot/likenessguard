@@ -4,7 +4,7 @@
                                    "DefaultConfiguration":  {
                                                                 "LG_DB_PATH":  "C:/greengrass/v2/work/edge_cache.db",
                                                                 "LG_SIMILARITY_THRESHOLD":  "0.85",
-                                                                "LG_API_ENDPOINT":  "https://ol35n8kn4f.execute-api.us-east-1.amazonaws.com/v1",
+                                                                "LG_API_ENDPOINT":  "https://YOUR_API_ID.execute-api.us-east-1.amazonaws.com/v1",
                                                                 "LG_CACHE_MAX_ENTRIES":  "10000",
                                                                 "LG_SYNC_INTERVAL":  "300"
                                                             }

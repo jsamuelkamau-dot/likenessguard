@@ -15,7 +15,7 @@ Description: >
 Parameters:
   OpenSearchCollectionEndpoint:
     Type: String
-    Default: 'nxd3bg25jojtumlkpbdk.us-east-1.aoss.amazonaws.com'
+    Default: 'YOUR_COLLECTION_ID.us-east-1.aoss.amazonaws.com'
   UseOpenSearch:
     Type: String
     Default: 'true'
