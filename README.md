@@ -42,7 +42,11 @@ LikenessGuard stops non-consensual AI image generation **before it happens** —
 
 See how LikenessGuard enforces consent before any AI image generation or editing involving a real person’s likeness.
 
-[![Watch the demo](https://img.youtube.com/vi/HKEn57epmyY/0.jpg)](https://www.youtube.com/watch?v=HKEn57epmyY)
+
+
+https://github.com/user-attachments/assets/f9c596e5-4b2f-492e-b3c6-be725ac8f4ee
+
+
 
 ---
 
