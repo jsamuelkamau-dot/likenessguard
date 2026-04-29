@@ -1,0 +1,57 @@
+version: 2
+
+# LikenessGuard ships three package surfaces:
+#   - pip:    likenessguard-aws/requirements-dev.txt (test deps)
+#   - npm:    likenessguard-dashboard/ (React app)
+#   - github-actions: .github/workflows/* (CI pinning)
+#
+# Issue #9 asks for weekly updates with minor/patch grouping so we
+# don't drown in PR noise on small bumps. Major bumps still get
+# their own PR so reviewers can read the changelog before merging.
+
+updates:
+  # Python — likenessguard-aws test/runtime dependencies
+  - package-ecosystem: "pip"
+    directory: "/likenessguard-aws"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    groups:
+      python-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # JavaScript / TypeScript — React dashboard
+  - package-ecosystem: "npm"
+    directory: "/likenessguard-dashboard"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "javascript"
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions used by ci.yml / security-scan.yml. SHA-pinned
+  # actions still get version-comment updates from Dependabot here.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      actions-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
