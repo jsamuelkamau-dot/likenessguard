@@ -2,5 +2,5 @@ pytest>=8.0.0
 hypothesis>=6.100.0
 flake8>=7.0.0
 boto3>=1.34.0
-httpx>=0.27.0
+httpx>=0.28.1
 moto[all]>=5.0.0
