@@ -4,6 +4,7 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/jsamuelkamau-dot/likenessguard/actions/workflows/ci.yml/badge.svg)](https://github.com/jsamuelkamau-dot/likenessguard/actions)
+[![ANZ Regional Champion - AWS AIdeas 2025](https://img.shields.io/badge/ANZ%20Regional%20Champion-AWS%20AIdeas%202025-FF9900?style=flat&logo=amazonaws&logoColor=white)](https://builder.aws.com/content/3D5gTWIjP2zvKncBZBCs849xRqn/aws-10000-aideas-competition-meet-the-winners)
 
 LikenessGuard stops non-consensual AI image generation **before it happens** — at the point of generation, not after. When an AI model receives a request to generate or edit an image involving a real person's face, LikenessGuard checks consent in real time. If consent is denied, the AI refuses. If consent is granted, a cryptographically signed Proof-of-Face certificate is issued.
 
@@ -378,4 +379,4 @@ Contributions are accepted under the Apache 2.0 license via [Developer Certifica
 
 ## Acknowledgements
 
-Built by Samuel Jesse. Recognized as an [AWS AIdeas 2025 Top 50 Finalist](https://builder.aws.com/connect/events/10000aideas). Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway.
+Built by Samuel Jesse. **[ANZ Regional Champion — AWS AIdeas 2025](https://builder.aws.com/content/3D5gTWIjP2zvKncBZBCs849xRqn/aws-10000-aideas-competition-meet-the-winners)** and AWS AIdeas 2025 Top 50 Finalist. Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway.
