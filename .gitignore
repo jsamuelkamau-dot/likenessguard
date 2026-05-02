@@ -159,6 +159,7 @@ tsconfig.json
 package.json
 package-lock.json
 requirements.txt
+!likenessguard-mcp/requirements.txt
 setup.py
 pytest.ini
 storage/
