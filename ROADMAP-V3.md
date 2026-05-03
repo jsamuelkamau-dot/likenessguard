@@ -143,18 +143,17 @@ has registered.
 
 ## Phased Work Plan
 
-Each phase corresponds to one prompt in the implementation sequence. Each phase
-produces a requirements document before any code is written.
+Each phase produces a requirements document before any code is written.
 
-| Phase | Component | Prompts |
-|-------|-----------|---------|
-| 1 | Governance setup (this document) | Prompt 1 |
-| 2 | Identity Resolution | Prompts 2.1, 2.2, 2.3 |
-| 3 | Consent Resolution | Prompts 3.1, 3.2 |
-| 4 | Provenance Issuance | Prompts 4.1, 4.2 |
-| 5 | Audit and Replay | Prompt 5.1 |
-| 6 | Conformance Suite | Prompt 6.1 |
-| 7 | Outreach materials | Prompt 7.2 |
+| Phase | Component |
+|-------|-----------|
+| 1 | Governance setup (this document) |
+| 2 | Identity Resolution |
+| 3 | Consent Resolution |
+| 4 | Provenance Issuance |
+| 5 | Audit and Replay |
+| 6 | Conformance Suite |
+| 7 | Outreach materials |
 
 All v3 work happens on the `v3-reference-implementation` branch. `main` continues
 to host v2 unchanged until the conformance suite passes end-to-end and the branch
@@ -216,13 +215,13 @@ Resolution component and removes the LLM invocation that surrounds it.
 
 ## Governance
 
-All v3 work is governed by six steering constraints in `.kiro/steering/`:
+All v3 work is governed by six constraints that apply to every contribution:
 
-- `no-fabricated-scores.md` — no invalid cross-embedding similarity scores
-- `no-llm-in-decision-path.md` — no LLM on the consent check path
-- `every-decision-replayable.md` — every decision reproducible from recorded inputs
-- `both-modes-equal.md` — Registered-Subject Mode and Closed-Consent Mode are both first-class
-- `spec-before-code.md` — requirements document must exist before implementation
-- `honest-claims.md` — documentation may not claim what the conformance suite does not verify
+- No invalid cross-embedding similarity scores — if matching fails, return `MatchUnavailable`
+- No LLM on the consent check path — the decision evaluator must be deterministic
+- Every decision must be reproducible from its recorded inputs
+- Registered-Subject Mode and Closed-Consent Mode are both first-class — neither is a default or fallback
+- Requirements document must exist before implementation begins for each component
+- Documentation may not claim behaviors the conformance suite does not verify
 
-Cross-component interface contracts are defined in `.kiro/specs/contracts/`.
+Cross-component interface contracts are defined in the `contracts/` directory.
