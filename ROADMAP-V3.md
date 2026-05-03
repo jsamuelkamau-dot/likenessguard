@@ -8,7 +8,7 @@ a reference implementation others build on.
 
 **Four specific problems with v2:**
 
-**1. v2 face matching does not perform face recognition.**
+**1. v2 face matching does not perform face recognition in some instances.**
 The v2 supervisor falls back to a cross-embedding cosine comparison between Titan
 query vectors and Rekognition-stored vectors. These are different embedding spaces.
 The cosine score between them is not a similarity score — it is a number. When that
