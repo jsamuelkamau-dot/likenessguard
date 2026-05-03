@@ -59,7 +59,7 @@ v3 defines five components with specified interfaces:
 | Audit and Replay | Record every decision; replay from recorded inputs |
 | Conformance Suite | Verify structural correctness for both operating modes |
 
-Interface contracts for each component are defined in `.kiro/specs/contracts/`
+Interface contracts for each component are defined in the `contracts/` directory
 before implementation begins.
 
 ---
@@ -173,7 +173,7 @@ one mode at deployment time based on their requirements and trade-offs.
 
 | Phase | Work | Status |
 |-------|------|--------|
-| Phase 1 | Governance setup (this RFC, ROADMAP-V3.md, steering files, contracts directory) | In progress |
+| Phase 1 | Governance setup (this RFC, ROADMAP-V3.md, governance constraints, contracts directory) | In progress |
 | Phase 2 | Identity Resolution — FaceEmbeddingProvider interface, InsightFace provider, benchmark | Not started |
 | Phase 3 | Consent Resolution — evaluator spec and implementation | Not started |
 | Phase 4 | Provenance Issuance — v3 manifest signer, JWKS rotation | Not started |
