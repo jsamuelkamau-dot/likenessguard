@@ -20,8 +20,37 @@ If you want to contribute to any of these areas, open an issue or start a [Discu
 | Testing | Expand property-based tests to 30+ properties | 🔲 Planned | Medium |
 | Testing | Integration test suite with mocked AWS services | 🔲 Planned | Medium |
 | Edge | Greengrass v2 component published to AWS IoT registry | 🔲 Planned | High |
-| Security | Dependency scanning in CI (Dependabot + Snyk) | 🔲 Planned | Low |
+| Security | Dependency scanning in CI (Dependabot + Snyk) | 🟢 Done | — |
 | Security | SBOM generation for each release | 🔲 Planned | Low |
+
+## In Progress: v3.0 — Reference Implementation
+
+**Branch:** `v3-reference-implementation`
+**Theme: Formal specification and dual-mode consent enforcement**
+
+v3 reframes LikenessGuard as a reference implementation of an open consent-enforcement
+standard. See [ROADMAP-V3.md](ROADMAP-V3.md) for the full plan and
+[`.github/v3-rfc-issue.md`](.github/v3-rfc-issue.md) for the RFC open for contributor
+feedback.
+
+The core changes in v3:
+
+- **Formal component specification** — five components with defined interfaces and
+  interface contracts. Any component can be replaced by a conforming implementation.
+- **Two first-class operating modes** — Registered-Subject Mode (protects registered
+  subjects; advisory result for unregistered) and Closed-Consent Mode (default-deny
+  for everyone; no generation without a consent record on file).
+- **Deterministic decision path** — the consent evaluator is deterministic given its
+  inputs. No LLM on the decision path.
+- **Verified identity matching** — similarity scores must be computed by the configured
+  embedding provider in a consistent embedding space. The v2 cross-embedding score
+  fallback is removed.
+- **Dual-mode conformance suite** — a test suite any adopter can run against their
+  own deployment to verify conformance with the standard.
+- **Audit and replay** — every decision is reproducible from its recorded inputs.
+
+v2 remains on `main` and continues to receive bug fixes and security patches during
+the v3 transition. v3 merges to `main` after the conformance suite passes end-to-end.
 
 ## Next: v2.2 (Q4 2026)
 
@@ -37,17 +66,6 @@ If you want to contribute to any of these areas, open an issue or start a [Discu
 | Compliance | SOC 2 Type II mapping document | 🔲 Planned | Medium |
 | Compliance | GDPR data processing agreement template | 🔲 Planned | Low |
 | Performance | Sub-200ms P95 latency target | 🔲 Planned | High |
-
-## Future: v3.0 (2027)
-
-**Theme: Cloud-agnostic and decentralized**
-
-- **Multi-cloud support** — Azure and GCP deployment options alongside AWS
-- **Decentralized identity** — DID/Verifiable Credentials for subject identity
-- **On-chain consent registry** — optional blockchain-backed consent proofs for maximum transparency
-- **Browser-based consent widget** — embeddable UI for platforms to collect consent inline
-- **Consent delegation** — agents/representatives can manage consent on behalf of subjects
-- **Real-time streaming** — WebSocket API for live consent status updates
 
 ---
 
