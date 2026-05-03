@@ -1,6 +1,6 @@
 # LikenessGuard
 
-**An open-source framework for enforcing consent before AI image generation.**
+**An open-source reference implementation of a consent-enforcement standard for AI image generation.**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/jsamuelkamau-dot/likenessguard/actions/workflows/ci.yml/badge.svg)](https://github.com/jsamuelkamau-dot/likenessguard/actions)
@@ -53,14 +53,15 @@ https://github.com/user-attachments/assets/f9c596e5-4b2f-492e-b3c6-be725ac8f4ee
 ## Features
 
 - **Pre-generation enforcement** — consent checked before any image is rendered
-- **Bedrock multi-agent system** — Anomaly Agent (Claude Haiku) + Consent Orchestrator (Nova Pro) + Policy Reasoner (Nova Lite)
+- **Two operating modes** — Registered-Subject Mode (protects registered subjects) and Closed-Consent Mode (default-deny for everyone); adopters choose based on their use case
+- **Deterministic consent evaluation** — policy evaluation is deterministic given its inputs; no LLM on the decision path (v3)
 - **Hybrid facial matching** — Rekognition + Titan Embeddings + OpenSearch Serverless k-NN (<0.5% false negatives)
-- **Cryptographic Proof-of-Face** — KMS ECDSA P-256 signed C2PA-compatible manifests
+- **Cryptographic Proof-of-Face** — KMS ECDSA P-256 signed C2PA-compatible manifests; every decision produces a signed manifest
 - **Edge enforcement** — AWS IoT Greengrass v2 with offline default-deny
 - **Federated registry** — JWT-authenticated cross-platform peer sharing
 - **Claude.ai integration** — MCP connector for native consent enforcement in Claude
 - **Grok (xAI) integration** — OpenAI-compatible function calling
-- **Natural language policies** — write consent rules in plain English
+- **Natural language policies** — write consent rules in plain English (policy authoring only, not on the decision path)
 - **<300ms P95 latency** — production-ready performance
 - **~$4.20/month** at 100k checks — serverless cost efficiency
 
@@ -73,6 +74,7 @@ https://github.com/user-attachments/assets/f9c596e5-4b2f-492e-b3c6-be725ac8f4ee
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, coding standards, PR process, DCO |
 | [SECURITY.md](SECURITY.md) | Vulnerability reporting, disclosure policy |
 | [ROADMAP.md](ROADMAP.md) | Project direction, priorities, non-goals |
+| [ROADMAP-V3.md](ROADMAP-V3.md) | v3 reference implementation plan |
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
 | [Architecture](likenessguard-aws/docs/architecture-v2.md) | System architecture and design |
 | [Threat Model](docs/threat-model.md) | Security analysis, trust boundaries, invariants |
@@ -379,4 +381,4 @@ Contributions are accepted under the Apache 2.0 license via [Developer Certifica
 
 ## Acknowledgements
 
-Built by Samuel Jesse. **[ANZ Regional Champion — AWS AIdeas 2025](https://builder.aws.com/content/3D5gTWIjP2zvKncBZBCs849xRqn/aws-10000-aideas-competition-meet-the-winners)** and AWS AIdeas 2025 Top 50 Finalist. Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway.
+Built by Samuel Jesse. **[ANZ Regional Champion — AWS AIdeas 2025](https://builder.aws.com/content/3D5gTWIjP2zvKncBZBCs849xRqn/aws-10000-aideas-competition-meet-the-winners)**. Powered by AWS Bedrock, OpenSearch Serverless, KMS, IoT Greengrass, and API Gateway. v3 reference implementation in progress — see [ROADMAP-V3.md](ROADMAP-V3.md).

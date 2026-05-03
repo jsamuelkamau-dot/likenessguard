@@ -166,16 +166,22 @@ All commits in a PR must be signed off. The CI pipeline checks for this.
 | Branch | Purpose |
 |--------|---------|
 | `main` | Stable releases only. Protected — requires PR + review. |
-| `develop` | Next release integration branch. |
-| `feature/your-feature` | New features. Branch from `develop`. |
+| `v3-reference-implementation` | Active v3 development. All v3 work happens here until the conformance suite passes. |
+| `develop` | Next v2.x release integration branch. |
+| `feature/your-feature` | New features. Branch from `develop` (v2.x) or `v3-reference-implementation` (v3). |
 | `bugfix/issue-description` | Bug fixes. Branch from `develop` (or `main` for hotfixes). |
 | `hotfix/critical-fix` | Critical production fixes. Branch from `main`. |
 
 ```bash
-# Start a new feature
+# Start a new v2.x feature
 git checkout develop
 git pull upstream develop
 git checkout -b feature/my-new-feature
+
+# Start a v3 contribution
+git checkout v3-reference-implementation
+git pull upstream v3-reference-implementation
+git checkout -b feature/v3-my-contribution
 ```
 
 ---
@@ -204,7 +210,7 @@ Signed-off-by: Your Name <your.email@example.com>
 
 **Examples:**
 ```
-feat(supervisor): add cross-embedding fallback for DynamoDB matching
+feat(supervisor): add structured MatchUnavailable result for failed identity resolution
 fix(anomaly-agent): handle empty requester_id gracefully
 docs(readme): add Grok integration setup instructions
 security(kms): enforce signing failure → DENY invariant
@@ -310,6 +316,9 @@ These rules apply to every PR. Violations will be rejected regardless of other m
 4. **No raw biometric storage** — only 512-dim vectors stored; raw photos deleted within 24h
 5. **Audit completeness** — every consent decision is written to the audit log
 6. **No hardcoded secrets** — credentials, API keys, and account IDs must use placeholders or environment variables
+7. **No LLM on the decision path** (v3) — LLMs are permitted only in policy-authoring tools, not on the consent check path
+8. **No invalid cross-embedding scores** (v3) — similarity scores must be computed by the configured embedding provider in a consistent embedding space; if matching fails, return a structured `MatchUnavailable` result
+9. **Mode must be recorded** (v3) — every manifest and audit entry must record the operating mode (Registered-Subject Mode or Closed-Consent Mode); mode cannot be silently switched
 
 See [docs/threat-model.md](docs/threat-model.md) for the full threat model and security invariant list.
 

@@ -3,6 +3,21 @@
 All notable changes to LikenessGuard are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased] — v3.0.0
+
+v3 is in active development on the `v3-reference-implementation` branch.
+See [ROADMAP-V3.md](ROADMAP-V3.md) for the full plan and the open RFC for feedback.
+
+### Planned changes
+- Formal five-component specification with interface contracts
+- Two first-class operating modes: Registered-Subject Mode and Closed-Consent Mode
+- Deterministic consent evaluator — no LLM on the decision path
+- Verified identity matching — similarity scores computed in a consistent embedding space; `MatchUnavailable` returned when matching fails
+- Dual-mode conformance suite
+- Audit and replay — every decision reproducible from recorded inputs
+- Removal of v2 cross-embedding similarity score fallback
+- Removal of unsigned-JWT federation fallback
+
 ## [2.0.0] - 2026-04-28
 
 ### Added

@@ -4,7 +4,8 @@
 
 | Version | Supported |
 |---------|-----------|
-| v2.x    | ✅ Active |
+| v3.x (in development) | ✅ Active — `v3-reference-implementation` branch |
+| v2.x    | ✅ Active — security patches and bug fixes |
 | v1.x    | ❌ End of life |
 
 ## Reporting a Vulnerability
