@@ -168,7 +168,7 @@ Option A preserves a field whose value is non-deterministic by definition. If tw
 
 Option B attempts to salvage the concept but introduces a new metric that has no established meaning. What does "policy confidence" mean for a deterministic rule evaluation? If the rules match, confidence is 1.0. If they don't, confidence is 0.0. A binary signal does not benefit from a continuous score.
 
-The chosen approach removes the field entirely. The `decision.confidence` field in v3 is repurposed to record the similarity score from face matching (same as `similarity_score`), which is deterministic and reproducible given the same embedding model and vectors. This is a genuine confidence measure with calibrated meaning (derived from the embedding model's operating point).
+The chosen approach removes the field entirely. The `decision.similarity_score` field records the cosine similarity from face matching, which is deterministic and reproducible given the same embedding model and vectors. This is a genuine measure with calibrated meaning (derived from the embedding model's operating point).
 
 ---
 
