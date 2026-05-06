@@ -101,7 +101,6 @@ A Consent Manifest is a JSON object with the following top-level fields. All fie
     "outcome": "ALLOW",
     "reason_code": "ALLOW_POLICY_PERMITS",
     "binding": true,
-    "confidence": 0.9812,
     "similarity_score": 0.9812,
     "similarity_threshold": 0.85
   },
@@ -111,7 +110,7 @@ A Consent Manifest is a JSON object with the following top-level fields. All fie
     "dimensionality": 512,
     "normalization": "L2",
     "benchmark": "LFW",
-    "operating_point": "1e-6"
+    "operating_point": "FAR=1e-5"
   },
   "image": {
     "reference_hash": "sha256:abcdef1234567890...",
@@ -125,6 +124,58 @@ A Consent Manifest is a JSON object with the following top-level fields. All fie
   },
   "revocation": {
     "verify_url": "https://example.com/v3/revocation/status"
+  }
+}
+```
+
+**Example: Unmatched subject in Registered-Subject Mode (advisory)**
+
+```json
+{
+  "schema_version": "3.0.0",
+  "manifest_id": "7c9e6d30-a1b2-4f3e-8d4c-123456789abc",
+  "issued_at": "2025-01-15T12:00:05Z",
+  "expires_at": "2025-01-16T12:00:05Z",
+  "mode": {
+    "active": "REGISTERED_SUBJECT",
+    "per_usage_type": {}
+  },
+  "subject": {
+    "id": null,
+    "policy_version": null,
+    "policy_hash": null,
+    "match_status": "NO_MATCH"
+  },
+  "requester": {
+    "id": "requester-uuid",
+    "platform": "platform-id",
+    "purpose": "Generate portrait",
+    "usage_type": "GENERAL_GENERATION"
+  },
+  "decision": {
+    "outcome": "ADVISORY_NO_REGISTERED_SUBJECT",
+    "reason_code": "ADVISORY_NO_REGISTERED_SUBJECT",
+    "binding": false,
+    "similarity_score": null,
+    "similarity_threshold": null
+  },
+  "embedding": {
+    "model_id": "insightface-buffalo_l",
+    "model_version": "1.0.0",
+    "dimensionality": 512,
+    "normalization": "L2",
+    "benchmark": "LFW",
+    "operating_point": "FAR=1e-5"
+  },
+  "image": {
+    "reference_hash": "sha256:fedcba9876543210...",
+    "hash_algorithm": "SHA-256"
+  },
+  "proof": {
+    "kid": "RFC7638-thumbprint",
+    "algorithm": "ES256",
+    "signature": "base64url-encoded-signature",
+    "jwks_url": "https://example.com/.well-known/jwks.json"
   }
 }
 ```
@@ -150,7 +201,6 @@ A Consent Manifest is a JSON object with the following top-level fields. All fie
 | `decision.outcome` | string (enum) | The consent decision. |
 | `decision.reason_code` | string (enum) | Machine-readable reason for the decision. |
 | `decision.binding` | boolean | Whether this decision is binding on the generator. |
-| `decision.confidence` | number (0.0–1.0) | The similarity score that informed the match decision. Same as `similarity_score` when a match was evaluated. |
 | `decision.similarity_score` | number or null | Cosine similarity between query and reference embeddings, or null if no comparison was performed. |
 | `decision.similarity_threshold` | number or null | The threshold that was applied, or null if no comparison was performed. |
 | `embedding.model_id` | string | Identifier of the embedding model used for face matching. |
@@ -158,7 +208,7 @@ A Consent Manifest is a JSON object with the following top-level fields. All fie
 | `embedding.dimensionality` | integer | Dimensionality of the embedding vectors. |
 | `embedding.normalization` | string | Normalization applied to vectors (e.g., "L2"). |
 | `embedding.benchmark` | string | The benchmark dataset used to calibrate the operating point. |
-| `embedding.operating_point` | string | The false-positive rate at which the threshold was set (e.g., "1e-6"). |
+| `embedding.operating_point` | string | The false-acceptance rate at which the threshold was calibrated. Format: `"FAR=<value>"` where value is scientific notation (e.g., `"FAR=1e-5"`). |
 | `image.reference_hash` | string | Hash of the reference image used for matching. |
 | `image.hash_algorithm` | string | Algorithm used to compute `reference_hash`. |
 | `proof.kid` | string | Key identifier: JWK thumbprint per RFC 7638. |
@@ -194,7 +244,7 @@ The structure separates concerns into logical groups: identity (subject), author
 | `DENY_FACE_SWAP` | The request involves face swapping and the subject's policy denies face swaps. |
 | `DENY_THIRD_PARTY_EDIT` | A third party is requesting edits to the subject's likeness and the policy denies this. |
 | `DENY_PLATFORM_BLOCKED` | The requesting platform is blocked by the subject's policy. |
-| `DENY_NOT_IN_ALLOWLIST` | The requester is not in the subject's explicit allowlist (when allowlist mode is active). |
+| `DENY_NOT_IN_ALLOWLIST` | The requester is not in the subject's explicit allowlist (see Consent Resolution spec for allowlist semantics). |
 | `DENY_PROVISIONAL_ENTRY` | The subject's consent record is provisional and not yet confirmed. |
 | `DENY_SIMILARITY_BELOW_THRESHOLD` | A face was detected but similarity fell below the configured threshold. |
 | `DENY_MATCH_UNAVAILABLE` | The matching system could not produce a result (provider error, no face detected, multiple faces). |
@@ -306,10 +356,11 @@ ECDSA P-256 is the same algorithm used in v2 and is widely supported by HSMs, cl
 
 **Compromise procedure:**
 
-1. Immediately remove the compromised key from the JWKS.
-2. Issue a revocation notice for all manifests signed with the compromised key (see Section 9).
+1. Mark the compromised key in the JWKS as compromised by adding a `revoked_at` timestamp field to the JWK entry. Do NOT remove the key — it is needed to verify pre-compromise manifests.
+2. Issue revocation notices for all manifests signed with the compromised key whose `issued_at` falls after the estimated compromise timestamp (see Section 9).
 3. Generate a new key and resume signing.
-4. Publish an incident report documenting the compromise window (first and last manifest signed with the compromised key).
+4. Publish an incident report documenting the compromise window (estimated compromise timestamp, last manifest signed with the compromised key).
+5. Verifiers encountering a manifest signed by a compromised key MUST check `issued_at` against the key's `revoked_at` timestamp: manifests with `issued_at` before `revoked_at` are treated normally (VERIFIED_NOT_REVOKED unless individually revoked); manifests with `issued_at` at or after `revoked_at` are treated as VERIFIED_REVOKED.
 
 ### Rationale
 
