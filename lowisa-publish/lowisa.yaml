@@ -6,5 +6,5 @@ systemMessage: "You are LoWisa, a development mentor. On session start, call the
 
 mcpServers:
   - name: lowisa-backend
-    url: https://lowisa-api-production.up.railway.app/mcp/sse
-    transport: sse
+    command: npx
+    args: ["mcp-remote", "https://lowisa-api-production.up.railway.app/mcp/sse"]
