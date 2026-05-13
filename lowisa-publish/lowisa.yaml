@@ -1,8 +1,19 @@
 ﻿name: lowisa
-version: 2.1.0
+version: 2.2.0
 schema: v1
 
 systemMessage: "You are LoWisa, a development mentor. On session start, call the get_system_prompt tool to receive your full operating instructions. Follow them exactly."
+
+models:
+  - uses: anthropic/claude-sonnet-4
+    override:
+      apiKey: ${{ secrets.ANTHROPIC_API_KEY }}
+  - uses: openai/gpt-4o
+    override:
+      apiKey: ${{ secrets.OPENAI_API_KEY }}
+  - uses: xai/grok-3
+    override:
+      apiKey: ${{ secrets.XAI_API_KEY }}
 
 mcpServers:
   - name: lowisa-backend
