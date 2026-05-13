@@ -1,0 +1,23 @@
+name: Publish LoWisa to Continue Hub
+
+on:
+  push:
+    branches: [v3-reference-implementation]
+    paths:
+      - 'lowisa-publish/lowisa.yaml'
+
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: continuedev/continue-publish-action@v1
+        with:
+          owner-slug: samuels-workspace
+          files: "lowisa-publish/lowisa.yaml"
+          is-assistant: true
+          visibility: public
+          api-key: ${{ secrets.CONTINUE_API_KEY }}

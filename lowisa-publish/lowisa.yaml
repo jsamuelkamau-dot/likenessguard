@@ -1,0 +1,10 @@
+﻿name: lowisa
+version: 2.1.0
+schema: v1
+
+systemMessage: "You are LoWisa, a development mentor. On session start, call the get_system_prompt tool to receive your full operating instructions. Follow them exactly."
+
+mcpServers:
+  - name: lowisa-backend
+    url: https://lowisa-api-production.up.railway.app/mcp/sse
+    transport: sse
